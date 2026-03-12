@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -203,7 +202,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 space-y-12 animate-fade-in">
         <div className="w-32 h-32 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-xl animate-bounce">
-          <Heart className="w-20 h-20 fill-on-secondary-container" />
+          <span className="material-symbols-outlined text-7xl" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
         </div>
         <div className="text-center space-y-4 max-w-sm">
           <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight leading-tight">MedGrandma AI</h1>
@@ -231,7 +230,7 @@ export default function Home() {
   return (
     <div className="bg-background font-body text-on-background min-h-screen flex flex-col selection:bg-primary-container">
       {/* TopAppBar */}
-      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b border-outline/5">
+      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-sm border-2 border-white overflow-hidden">
             {user.photoURL ? (
@@ -243,7 +242,7 @@ export default function Home() {
           <h1 className="font-headline text-2xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
         <button onClick={() => setAppState('ACCOUNT')} className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors">
-          <span className="material-symbols-outlined text-2xl">help_outline</span>
+          <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
         </button>
       </header>
 
@@ -330,7 +329,7 @@ export default function Home() {
               onClick={() => setShowEmergencyDialog(true)}
               className="h-20 rounded-xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full border-b-4 border-black/10 active:border-b-0 transition-all"
             >
-              <PhoneCall className="w-8 h-8" />
+              <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>emergency</span>
               <span className="text-xl font-extrabold uppercase tracking-tight">Chamar Ambulância</span>
             </Button>
           </>
@@ -340,7 +339,7 @@ export default function Home() {
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
                <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
-                 <ArrowLeft className="w-7 h-7 text-primary" />
+                 <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minhas Receitas</h2>
             </div>
@@ -360,19 +359,19 @@ export default function Home() {
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary shadow-inner">
-                        <FileText className="w-7 h-7" />
+                        <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
                       </div>
                       <div>
                         <h4 className="font-headline font-bold text-xl text-on-background">{item.medicineName}</h4>
                         <p className="text-sm text-muted-foreground font-medium">{new Date(item.scanDateTime).toLocaleString('pt-BR')}</p>
                       </div>
                     </div>
-                    <ChevronRight className="w-6 h-6 text-primary/30" />
+                    <span className="material-symbols-outlined text-primary/30">chevron_right</span>
                   </div>
                 ))
               ) : (
                 <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed border-outline/10">
-                  <History className="w-16 h-16 text-primary/20 mx-auto" />
+                  <span className="material-symbols-outlined text-6xl text-primary/20 mx-auto" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
                   <p className="text-xl text-muted-foreground font-bold">Sua caixinha de lembranças está vazia!</p>
                   <Button onClick={() => setAppState('IDLE')} variant="outline" className="rounded-full px-8">Começar Agora</Button>
                 </div>
@@ -385,7 +384,7 @@ export default function Home() {
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
                <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
-                 <ArrowLeft className="w-7 h-7 text-primary" />
+                 <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minha Conta</h2>
             </div>
@@ -393,7 +392,7 @@ export default function Home() {
             <div className="bg-white p-8 rounded-xl space-y-8 soft-float border border-white">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-24 h-24 rounded-full bg-secondary-container overflow-hidden border-4 border-white shadow-lg">
-                   {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-5xl">face_6</span>}
+                   {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>face_6</span>}
                 </div>
                 <div className="text-center">
                    <h3 className="font-headline text-2xl font-bold">{user.displayName}</h3>
@@ -407,7 +406,7 @@ export default function Home() {
                   variant="outline" 
                   className="w-full h-16 rounded-full border-2 border-error/20 text-error font-bold text-lg hover:bg-error/5"
                 >
-                  <LogOut className="w-6 h-6 mr-2" /> Sair do Aplicativo
+                  <span className="material-symbols-outlined mr-2">logout</span> Sair do Aplicativo
                 </Button>
               </div>
             </div>
@@ -418,7 +417,7 @@ export default function Home() {
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
                <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
-                 <ArrowLeft className="w-7 h-7 text-primary" />
+                 <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Horários</h2>
             </div>
@@ -431,7 +430,7 @@ export default function Home() {
                   <p className="text-on-surface-variant font-bold">1 comprimido em jejum</p>
                 </div>
                 <div className="w-14 h-14 bg-surface-container rounded-full flex items-center justify-center pillow-shadow text-primary">
-                  <Clock className="w-7 h-7" />
+                  <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
                 </div>
               </div>
             </div>
@@ -533,7 +532,7 @@ export default function Home() {
       <Dialog open={showEmergencyDialog} onOpenChange={setShowEmergencyDialog}>
         <DialogContent className="max-w-sm rounded-xl p-8 text-center space-y-6 bg-surface border-none shadow-2xl">
           <div className="bg-error-container w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner">
-            <PhoneCall className="w-12 h-12 text-error" />
+            <span className="material-symbols-outlined text-5xl text-error" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
           </div>
           <DialogHeader>
             <DialogTitle className="font-headline text-2xl font-extrabold text-error">Chamar o SAMU?</DialogTitle>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState } from 'react';
@@ -61,7 +60,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
                 onClick={() => handlePlayAudio(idx, med.name, med.longInstruction)}
                 className="absolute top-0 right-0 p-2 rounded-full bg-white shadow-md text-primary hover:scale-110 transition-transform"
               >
-                {loadingAudioIdx === idx ? <Loader2 className="w-5 h-5 animate-spin" /> : <Volume2 className="w-5 h-5" />}
+                {loadingAudioIdx === idx ? <Loader2 className="w-5 h-5 animate-spin" /> : <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>volume_up</span>}
               </button>
             </div>
             <div className="text-center space-y-1">
@@ -82,7 +81,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         <div className="space-y-1 px-2">
           <h2 className="font-headline font-bold text-2xl text-on-background">Farmácias Perto de Você</h2>
           <p className="text-on-surface-variant text-sm flex items-center gap-1 font-medium">
-            <MapPin className="w-4 h-4 text-primary" />
+            <span className="material-symbols-outlined text-primary text-base" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
             Detectamos sua localização em {data.city || 'sua região'}
           </p>
         </div>
@@ -103,7 +102,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           {data.pharmacies.map((pharm, i) => (
             <div key={i} className="flex items-center gap-4 bg-surface-container p-4 rounded-lg border border-white/20 soft-float">
               <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                <span className="material-symbols-outlined text-primary text-3xl">local_pharmacy</span>
+                <span className="material-symbols-outlined text-primary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>local_pharmacy</span>
               </div>
               <div className="flex-grow">
                 <h4 className="font-bold text-on-surface text-lg">{pharm.name}</h4>
@@ -114,7 +113,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
                 className="bg-[#25D366] hover:bg-[#128C7E] text-white px-4 h-11 rounded-full flex items-center gap-2 shadow-sm"
               >
                 <a href={`https://wa.me/${pharm.whatsapp}`} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>chat</span>
                   <span className="font-bold text-xs">WhatsApp</span>
                 </a>
               </Button>
@@ -125,7 +124,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
 
       {/* Final Message */}
       <div className="bg-primary-container/20 p-8 rounded-xl text-center space-y-4 border-2 border-dashed border-primary/20">
-        <Heart className="w-12 h-12 text-primary mx-auto fill-primary" />
+        <span className="material-symbols-outlined text-primary text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
         <p className="font-headline font-bold text-primary italic text-lg">
           "Não esqueça de tomar uma aguinha também, viu, meu anjo?"
         </p>
@@ -135,7 +134,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         onClick={onReset}
         className="w-full h-16 text-xl font-bold rounded-full bg-primary text-white shadow-xl flex items-center justify-center gap-3"
       >
-        <RefreshCcw className="w-6 h-6" />
+        <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>home</span>
         Voltar ao Início
       </Button>
     </div>

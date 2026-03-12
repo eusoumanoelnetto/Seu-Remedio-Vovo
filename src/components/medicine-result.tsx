@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState } from 'react';
@@ -71,7 +70,7 @@ export function MedicineResult({ medicineName, explanation, onReset }: MedicineR
           {isPlaying ? (
             <Loader2 className="w-8 h-8 animate-spin" />
           ) : (
-            <span className="material-symbols-outlined text-3xl">volume_up</span>
+            <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>volume_up</span>
           )}
           <span>Ouvir a explicação</span>
         </Button>
@@ -97,7 +96,7 @@ export function MedicineResult({ medicineName, explanation, onReset }: MedicineR
         onClick={onReset}
         className="w-full h-24 text-2xl font-bold rounded-full shadow-2xl bg-secondary text-white flex items-center justify-center gap-5 border-b-8 border-black/10 active:border-b-0 transition-all"
       >
-        <RefreshCcw className="w-8 h-8" />
+        <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>refresh</span>
         Ver outro remédio
       </Button>
     </div>
