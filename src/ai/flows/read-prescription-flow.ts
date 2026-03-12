@@ -1,6 +1,7 @@
+
 'use server';
 /**
- * @fileOverview Um fluxo Genkit para ler receitas médicas, identificar remédios e sugerir farmácias.
+ * @fileOverview Um fluxo Genkit para ler receitas médicas, identificar remédios e sugerir farmácias baseando-se na localização real.
  */
 
 import {ai} from '@/ai/genkit';
@@ -12,7 +13,7 @@ const ReadPrescriptionInputSchema = z.object({
     .describe(
       "Uma foto da receita médica, como um data URI em Base64."
     ),
-  userLocation: z.string().optional().describe('Localização aproximada do usuário (cidade/bairro) para busca de farmácias.'),
+  userLocation: z.string().optional().describe('Coordenadas ou endereço do usuário para busca de farmácias.'),
 });
 export type ReadPrescriptionInput = z.infer<typeof ReadPrescriptionInputSchema>;
 
@@ -47,12 +48,14 @@ const readPrescriptionPrompt = ai.definePrompt({
   output: {schema: ReadPrescriptionOutputSchema},
   prompt: `Você é um assistente farmacêutico gentil para idosos. 
 Sua tarefa é ler a foto de uma RECEITA MÉDICA e:
-1. Identificar EXATAMENTE os nomes dos remédios escritos (seja muito cuidadoso para não errar o nome).
-2. Explicar de forma muito simples para que servem.
-3. Sugerir 3 farmácias reais conhecidas no Brasil (como Droga Raia, Drogasil, Pague Menos) que geralmente estão em todo lugar, ou basear-se na localização: {{userLocation}}.
-4. Fornecer um número de WhatsApp fictício mas verossímil (ou real se souber) para essas farmácias para que a vovó possa entrar em contato.
+1. Identificar EXATAMENTE os nomes dos remédios escritos. Seja extremamente preciso, pois erros podem ser perigosos.
+2. Explicar de forma muito simples (linguagem para vovós) para que servem.
+3. Sugerir 3 farmácias REAIS próximas à localização do usuário: {{userLocation}}. 
+   Se a localização for coordenadas (Lat/Long), use-as para encontrar farmácias reais naquela área.
+   Dê preferência a redes grandes conhecidas (como Droga Raia, Drogasil, Pague Menos) ou farmácias locais populares.
+4. Fornecer o número de WhatsApp dessas farmácias (se não souber o real, use um formato padrão verossímil da região).
 
-Seja muito claro e use linguagem popular. 
+Seja muito claro e use linguagem popular e acolhedora.
 
 Photo: {{media url=photoDataUri}}`,
 });

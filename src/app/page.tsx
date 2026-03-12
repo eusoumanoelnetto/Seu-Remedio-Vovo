@@ -1,7 +1,8 @@
+
 "use client"
 
 import React, { useState, useRef } from 'react';
-import { Camera, Heart, Stethoscope, Image as ImageIcon, FileText } from 'lucide-react';
+import { Camera, Heart, Stethoscope, Image as ImageIcon, FileText, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from '@/components/camera-capture';
 import { LoadingState } from '@/components/loading-state';
@@ -11,6 +12,7 @@ import { explainMedicine } from '@/ai/flows/medicine-explanation';
 import { readPrescription } from '@/ai/flows/read-prescription-flow';
 import type { MedicineExplanationOutput } from '@/ai/flows/medicine-explanation';
 import type { ReadPrescriptionOutput } from '@/ai/flows/read-prescription-flow';
+import { useToast } from '@/hooks/use-toast';
 
 type AppMode = 'MEDICINE' | 'PRESCRIPTION';
 type AppState = 'IDLE' | 'CAPTURING' | 'PROCESSING' | 'RESULT';
@@ -20,7 +22,33 @@ export default function Home() {
   const [appState, setAppState] = useState<AppState>('IDLE');
   const [medicineResult, setMedicineResult] = useState<MedicineExplanationOutput | null>(null);
   const [prescriptionResult, setPrescriptionResult] = useState<ReadPrescriptionOutput | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'IDLE' | 'GETTING' | 'SUCCESS' | 'ERROR'>('IDLE');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const getUserLocation = (): Promise<string | undefined> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(undefined);
+        return;
+      }
+
+      setLocationStatus('GETTING');
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const loc = `Lat: ${position.coords.latitude}, Long: ${position.coords.longitude}`;
+          setLocationStatus('SUCCESS');
+          resolve(loc);
+        },
+        (error) => {
+          console.error("Erro ao pegar localização:", error);
+          setLocationStatus('ERROR');
+          resolve(undefined);
+        },
+        { timeout: 10000 }
+      );
+    });
+  };
 
   const handleStartCapture = (mode: AppMode) => {
     setAppMode(mode);
@@ -34,13 +62,22 @@ export default function Home() {
         const output = await explainMedicine({ photoDataUri });
         setMedicineResult(output);
       } else {
-        const output = await readPrescription({ photoDataUri });
+        // Para receitas, tentamos pegar a localização antes de chamar a IA
+        const userLocation = await getUserLocation();
+        const output = await readPrescription({ 
+          photoDataUri,
+          userLocation 
+        });
         setPrescriptionResult(output);
       }
       setAppState('RESULT');
     } catch (error) {
       console.error("AI processing error:", error);
-      alert("Houve um probleminha ao ler a foto. Tente novamente, vovó!");
+      toast({
+        variant: "destructive",
+        title: "Ih, vovó!",
+        description: "Houve um probleminha ao ler a foto. Tente novamente!",
+      });
       setAppState('IDLE');
     }
   };
@@ -66,6 +103,7 @@ export default function Home() {
     setMedicineResult(null);
     setPrescriptionResult(null);
     setAppState('IDLE');
+    setLocationStatus('IDLE');
   };
 
   return (
@@ -149,9 +187,17 @@ export default function Home() {
         )}
 
         {appState === 'PROCESSING' && (
-          <LoadingState 
-            message={appMode === 'MEDICINE' ? "Estou lendo o remédio..." : "Estou lendo a receita..."} 
-          />
+          <div className="w-full flex flex-col items-center">
+            <LoadingState 
+              message={appMode === 'MEDICINE' ? "Estou lendo o remédio..." : "Estou lendo a receita..."} 
+            />
+            {locationStatus === 'GETTING' && (
+              <div className="flex items-center gap-2 text-primary font-bold animate-pulse mt-4">
+                <MapPin className="w-5 h-5" />
+                <span>Buscando sua localização...</span>
+              </div>
+            )}
+          </div>
         )}
 
         {appState === 'RESULT' && (
