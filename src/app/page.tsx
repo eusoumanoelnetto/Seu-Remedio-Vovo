@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, Trash2, HelpCircle, ChevronRight, Bell, Camera, User, LogOut, Mail, Chrome, Loader2 } from 'lucide-react';
+import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, HelpCircle, ChevronRight, Bell, User, LogOut, Chrome, Loader2, Camera, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from '@/components/camera-capture';
 import { LoadingState } from '@/components/loading-state';
@@ -56,7 +56,6 @@ export default function Home() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      // Initialize profile
       await setDoc(doc(db, 'users', user.uid), {
         id: user.uid,
         email: user.email,
@@ -68,12 +67,11 @@ export default function Home() {
       
       toast({ title: "Bem-vinda, vovó!", description: `Que bom ter a senhora aqui, ${user.displayName}!` });
     } catch (error: any) {
-      console.error("Auth error:", error);
       if (error.code === 'auth/operation-not-allowed') {
         toast({ 
           variant: "destructive", 
-          title: "Vovó, precisamos de ajuda!", 
-          description: "O login com Google ainda não foi ativado no painel. Por favor, peça para o suporte ativar." 
+          title: "Vovó, precisamos de um ajuste!", 
+          description: "O login com Google ainda não foi ativado no painel de controle. Peça para alguém ativar o 'Google' em 'Authentication' no Console do Firebase." 
         });
       } else {
         toast({ 
@@ -107,7 +105,6 @@ export default function Home() {
           resolve(loc);
         },
         (error) => {
-          console.error("Erro ao pegar localização:", error);
           setLocationStatus('ERROR');
           resolve(undefined);
         },
@@ -127,8 +124,6 @@ export default function Home() {
       if (appMode === 'MEDICINE') {
         const output = await explainMedicine({ photoDataUri });
         setMedicineResult(output);
-        
-        // Save to Firestore
         if (user) {
           addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicine_scans'), {
             userId: user.uid,
@@ -140,13 +135,8 @@ export default function Home() {
         }
       } else {
         const userLocation = await getUserLocation();
-        const output = await readPrescription({ 
-          photoDataUri,
-          userLocation 
-        });
+        const output = await readPrescription({ photoDataUri, userLocation });
         setPrescriptionResult(output);
-        
-        // Save to Firestore
         if (user) {
           addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicine_scans'), {
             userId: user.uid,
@@ -160,7 +150,6 @@ export default function Home() {
       }
       setAppState('RESULT');
     } catch (error) {
-      console.error("AI processing error:", error);
       toast({
         variant: "destructive",
         title: "Ih, vovó!",
@@ -217,7 +206,7 @@ export default function Home() {
           <Heart className="w-20 h-20 fill-on-secondary-container" />
         </div>
         <div className="text-center space-y-4 max-w-sm">
-          <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight">MedGrandma AI</h1>
+          <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight leading-tight">MedGrandma AI</h1>
           <p className="text-xl text-on-surface-variant font-medium">
             Seu assistente carinhoso para cuidar da saúde. Entre para salvar seus remédios!
           </p>
@@ -231,20 +220,9 @@ export default function Home() {
             {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin text-primary" /> : <Chrome className="w-6 h-6 text-primary" />}
             {isLoggingIn ? "Entrando..." : "Entrar com Google"}
           </Button>
-          <div className="relative py-4">
-             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline/10"></div></div>
-             <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground font-bold">Ou</span></div>
+          <div className="text-center space-y-1">
+            <p className="text-sm text-muted-foreground italic font-medium">"Um abraço de vovó em cada cuidado."</p>
           </div>
-          <Button 
-            variant="ghost"
-            className="w-full h-16 rounded-full text-primary font-bold text-lg hover:bg-primary/5"
-          >
-            <Mail className="w-6 h-6 mr-2" /> Entrar com Email
-          </Button>
-        </div>
-        <div className="text-center space-y-1">
-          <p className="text-sm text-muted-foreground italic font-medium">"Um abraço de vovó em cada cuidado."</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Versão 2.0 Luxo</p>
         </div>
       </div>
     );
@@ -255,87 +233,105 @@ export default function Home() {
       {/* TopAppBar */}
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b border-outline/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-secondary-container overflow-hidden flex items-center justify-center border-2 border-white shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-sm border-2 border-white overflow-hidden">
             {user.photoURL ? (
               <img src={user.photoURL} alt="Vovó" className="w-full h-full object-cover" />
             ) : (
-              <User className="w-6 h-6 text-on-secondary-container" />
+              <User className="w-7 h-7" />
             )}
           </div>
-          <h1 className="font-headline text-xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
+          <h1 className="font-headline text-2xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
-        <button className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+        <button onClick={() => setAppState('ACCOUNT')} className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors">
           <HelpCircle className="w-6 h-6" />
         </button>
       </header>
 
-      <main className="flex-1 px-6 pt-6 pb-32 space-y-8 max-w-2xl mx-auto w-full animate-fade-in">
+      <main className="flex-1 px-6 pt-8 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
         
         {appState === 'IDLE' && (
           <>
-            <section className="space-y-3">
-              <div className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-bold tracking-widest uppercase shadow-sm">
+            <section className="space-y-4">
+              <div className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-sm font-semibold tracking-wider shadow-sm uppercase">
                 BEM-VINDA AO MEDGRANDMA
               </div>
               <h2 className="font-headline text-4xl leading-tight text-on-background font-extrabold tracking-tight">
-                Como você está hoje?
+                Olá, Vovó! Como você está hoje?
               </h2>
             </section>
 
             <section className="grid grid-cols-1 gap-6">
+              {/* Action 1: Remédio */}
               <button 
                 onClick={() => handleStartCapture('MEDICINE')}
-                className="group relative w-full overflow-hidden bg-primary-container rounded-2xl p-8 text-left transition-transform active:scale-[0.96] ambient-float border border-white/40"
+                className="group relative w-full overflow-hidden bg-primary-container rounded-xl p-8 text-left transition-transform active:scale-[0.96] ambient-float border border-white/40"
               >
                 <div className="flex flex-col h-full justify-between gap-6">
                   <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
-                    <Pill className="w-12 h-12 text-primary fill-primary/10" />
+                    <Pill className="w-12 h-12 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-headline text-3xl text-on-primary-container mb-2 font-extrabold">Remédio</h3>
+                    <h3 className="font-headline text-3xl text-on-primary-container mb-2 font-extrabold">Tirar Foto do Remédio</h3>
                     <p className="text-on-primary-container/80 text-lg leading-snug font-medium">Vou te ajudar a saber o que é e como tomar!</p>
                   </div>
                 </div>
                 <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
               </button>
 
+              {/* Action 2: Receita */}
               <button 
                 onClick={() => handleStartCapture('PRESCRIPTION')}
-                className="group relative w-full overflow-hidden bg-secondary-container rounded-2xl p-8 text-left transition-transform active:scale-[0.96] ambient-float border border-white/40"
+                className="group relative w-full overflow-hidden bg-secondary-container rounded-xl p-8 text-left transition-transform active:scale-[0.96] ambient-float border border-white/40"
               >
                 <div className="flex flex-col h-full justify-between gap-6">
                   <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
-                    <FileText className="w-12 h-12 text-secondary fill-secondary/10" />
+                    <FileText className="w-12 h-12 text-secondary" />
                   </div>
                   <div>
-                    <h3 className="font-headline text-3xl text-on-secondary-container mb-2 font-extrabold">Receita Médica</h3>
+                    <h3 className="font-headline text-3xl text-on-secondary-container mb-2 font-extrabold">Ler Receita Médica</h3>
                     <p className="text-on-secondary-container/80 text-lg leading-snug font-medium">Não entende a letra do médico? Eu leio para você!</p>
                   </div>
                 </div>
               </button>
             </section>
 
-            <section className="bg-surface-container-low rounded-2xl p-8 relative overflow-hidden border border-white shadow-sm">
+            {/* Dica Card */}
+            <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden border border-white shadow-sm">
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="organic-blob w-20 h-20 bg-tertiary-container flex-shrink-0 flex items-center justify-center shadow-md">
-                  <Sparkles className="w-10 h-10 text-on-tertiary-container" />
+                <div className="organic-blob w-24 h-24 bg-tertiary-container flex-shrink-0 flex items-center justify-center shadow-md">
+                  <Sparkles className="w-12 h-12 text-on-tertiary-container" />
                 </div>
-                <div className="space-y-1">
-                  <h4 className="font-headline text-lg font-bold text-tertiary">Dica da Vovó</h4>
-                  <p className="text-on-surface text-lg leading-relaxed italic font-medium">
+                <div className="space-y-2">
+                  <h4 className="font-headline text-xl font-bold text-tertiary">Dica da Vovó</h4>
+                  <p className="text-on-surface text-xl leading-relaxed italic font-medium">
                     "Lembre-se de beber um copinho d'água agora, meu bem. Hidratação é saúde!"
                   </p>
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed opacity-10 rounded-full -mr-16 -mt-16"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed opacity-20 rounded-full -mr-16 -mt-16"></div>
             </section>
 
+            {/* Next Med Card */}
+            <div 
+              onClick={() => setAppState('SCHEDULE')}
+              className="bg-surface-container-high rounded-full p-6 flex items-center justify-between ambient-float border border-white cursor-pointer active:scale-95 transition-all"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center pillow-shadow">
+                  <Bell className="w-6 h-6 text-secondary" />
+                </div>
+                <span className="font-bold text-lg text-on-surface">Seu próximo remédio é às 15:00</span>
+              </div>
+              <ChevronRight className="w-6 h-6 text-primary" />
+            </div>
+
+            {/* Emergency Button */}
             <Button
               onClick={() => setShowEmergencyDialog(true)}
-              className="h-20 rounded-2xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full border-b-4 border-black/10 active:border-b-0 transition-all"
+              className="h-20 rounded-xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full border-b-4 border-black/10 active:border-b-0 transition-all"
             >
               <PhoneCall className="w-8 h-8" />
-              <span className="text-xl font-extrabold uppercase tracking-tight">Emergência (SAMU)</span>
+              <span className="text-xl font-extrabold uppercase tracking-tight">Chamar Ambulância</span>
             </Button>
           </>
         )}
@@ -360,7 +356,7 @@ export default function Home() {
                   <div 
                     key={item.id} 
                     onClick={() => handleOpenHistoryItem(item)}
-                    className="bg-white rounded-2xl p-6 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all soft-float border border-white"
+                    className="bg-white rounded-xl p-6 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all soft-float border border-white"
                   >
                     <div className="flex items-center gap-5">
                       <div className="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary shadow-inner">
@@ -375,7 +371,7 @@ export default function Home() {
                   </div>
                 ))
               ) : (
-                <div className="bg-surface-container-low rounded-2xl p-12 text-center space-y-4 border-2 border-dashed border-outline/10">
+                <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed border-outline/10">
                   <History className="w-16 h-16 text-primary/20 mx-auto" />
                   <p className="text-xl text-muted-foreground font-bold">Sua caixinha de lembranças está vazia!</p>
                   <Button onClick={() => setAppState('IDLE')} variant="outline" className="rounded-full px-8">Começar Agora</Button>
@@ -394,7 +390,7 @@ export default function Home() {
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minha Conta</h2>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl space-y-8 soft-float border border-white">
+            <div className="bg-white p-8 rounded-xl space-y-8 soft-float border border-white">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-24 h-24 rounded-full bg-secondary-container overflow-hidden border-4 border-white shadow-lg">
                    {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <User className="w-12 h-12" />}
@@ -415,12 +411,6 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-
-            <div className="bg-tertiary-container/20 p-8 rounded-2xl text-center space-y-2 italic border border-tertiary-container/30">
-               <p className="font-bold text-on-tertiary-container text-lg">
-                 "Seus dados estão protegidos aqui no meu caderninho digital, viu?"
-               </p>
-            </div>
           </div>
         )}
 
@@ -433,17 +423,8 @@ export default function Home() {
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Horários</h2>
             </div>
 
-            <div className="bg-surface-container-low p-8 rounded-2xl border-2 border-primary/10 shadow-sm italic">
-              <div className="flex items-start gap-4">
-                <AlertCircle className="w-6 h-6 text-primary shrink-0 mt-1" />
-                <p className="text-on-background text-lg font-bold leading-relaxed">
-                  Vovó, aqui a senhora pode ver os horários que o médico mandou tomar os remédios para não esquecer!
-                </p>
-              </div>
-            </div>
-
             <div className="space-y-6">
-              <div className="bg-white p-8 rounded-2xl flex items-center justify-between border-l-8 border-primary soft-float border-t border-r border-b border-white">
+              <div className="bg-white p-8 rounded-xl flex items-center justify-between border-l-8 border-primary soft-float border border-white">
                 <div>
                   <span className="bg-primary text-white font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wider">Às 08:00</span>
                   <h4 className="text-2xl font-extrabold text-on-background mt-2">Remédio de Pressão</h4>
@@ -454,10 +435,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            
-            <Button className="h-16 w-full rounded-full bg-primary text-white text-lg font-bold shadow-lg hover:brightness-110 transition-all">
-              Adicionar novo horário
-            </Button>
           </div>
         )}
 
@@ -476,12 +453,6 @@ export default function Home() {
             <LoadingState 
               message={appMode === 'MEDICINE' ? "Lendo seu remédio..." : "Lendo sua receita..."} 
             />
-            {locationStatus === 'GETTING' && (
-              <div className="flex items-center gap-4 bg-white px-8 py-4 rounded-full shadow-xl border border-primary/10 animate-pulse mt-6">
-                <MapPin className="w-6 h-6 text-primary" />
-                <span className="text-xl text-primary font-bold">Buscando farmácias próximas...</span>
-              </div>
-            )}
           </div>
         )}
 
@@ -505,13 +476,13 @@ export default function Home() {
       </main>
 
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-surface-container-highest/95 backdrop-blur-xl border-t border-outline-variant/15 px-4 pb-8 pt-4 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-surface-container-highest/95 backdrop-blur-xl border-t border-outline-variant/15 px-6 pb-8 pt-4 z-50">
         <div className="max-w-md mx-auto flex justify-between items-center">
           <button 
             onClick={() => handleStartCapture('MEDICINE')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
               <Pill className="w-6 h-6" />
             </div>
             <span className="text-[10px] font-bold text-on-surface-variant">Remédios</span>
@@ -521,7 +492,7 @@ export default function Home() {
             onClick={() => setAppState('HISTORY')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
               <FileText className="w-6 h-6" />
             </div>
             <span className="text-[10px] font-bold text-on-surface-variant">Receitas</span>
@@ -531,7 +502,7 @@ export default function Home() {
             onClick={() => setAppState('IDLE')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'IDLE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant shadow-sm")}>
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'IDLE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
               <Heart className="w-6 h-6 fill-current" />
             </div>
             <span className="text-[10px] font-bold text-on-surface-variant">Início</span>
@@ -541,7 +512,7 @@ export default function Home() {
             onClick={() => setAppState('ACCOUNT')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'ACCOUNT' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'ACCOUNT' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
               <User className="w-6 h-6" />
             </div>
             <span className="text-[10px] font-bold text-on-surface-variant">Conta</span>
@@ -551,9 +522,9 @@ export default function Home() {
             onClick={() => setAppState('SCHEDULE')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
               <Bell className="w-6 h-6" />
-              <div className="absolute top-1 right-3 w-2 h-2 bg-error rounded-full border-2 border-white"></div>
+              <div className="absolute top-1 right-4 w-2 h-2 bg-error rounded-full border border-white"></div>
             </div>
             <span className="text-[10px] font-bold text-on-surface-variant">Aviso</span>
           </button>
@@ -562,7 +533,7 @@ export default function Home() {
 
       {/* Emergency Dialog */}
       <Dialog open={showEmergencyDialog} onOpenChange={setShowEmergencyDialog}>
-        <DialogContent className="max-w-sm rounded-2xl p-8 text-center space-y-6 bg-surface border-none shadow-2xl">
+        <DialogContent className="max-w-sm rounded-xl p-8 text-center space-y-6 bg-surface border-none shadow-2xl">
           <div className="bg-error-container w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner">
             <PhoneCall className="w-12 h-12 text-error" />
           </div>

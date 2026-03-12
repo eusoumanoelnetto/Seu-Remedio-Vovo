@@ -121,7 +121,7 @@
           "schema": {
             "$ref": "#/backend/entities/MedicineScan"
           },
-          "description": "Stores all medicine scans performed by a specific user. The `userId` field within each document is denormalized from the parent path for authorization independence. Access is restricted to the authenticated user matching `userId`.",
+          "description": "Stores all medicine scans performed by a specific user. Access is restricted to the authenticated user matching `userId`.",
           "params": [
             {
               "name": "userId",
