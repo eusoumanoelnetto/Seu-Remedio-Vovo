@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -90,6 +91,7 @@
   },
   "auth": {
     "providers": [
+      "google",
       "password",
       "anonymous"
     ]
@@ -133,6 +135,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure for the 'Vovó Remédio Fácil' application is designed to prioritize security, scalability, and debuggability, adhering strictly to the provided core design principles and mandates.\n\n**Authorization Independence via Denormalization:**\n\n1.  **User Profiles (`/users/{userId}`):** Each user's profile is stored as a document in the top-level `users` collection. The document ID (`{userId}`) will directly correspond to `request.auth.uid`. This structure inherently provides authorization independence, as a user only needs to access `users/request.auth.uid` to manage their own profile, without needing to `get()` any other document.\n\n2.  **Medicine Scans (`/users/{userId}/medicine_scans/{scanId}`):** Medicine scans are stored as a subcollection under the respective user's profile. Each `MedicineScan` document will contain a `userId` field, which is a direct denormalization of the parent user's ID (`{userId}` in the path). This is crucial for Authorization Independence. Security rules for `medicine_scans` can directly check `request.auth.uid == resource.data.userId` (for document-level validation) or `request.auth.uid == userId` (for path-level validation) without requiring any `get()` operations on the parent `users` document. This allows for atomic writes and updates, and simplifies rule logic considerably.\n\n**QAPs (Queries as Authorization Primitives):**\n\n1.  **User Profiles:** Listing user profiles globally is generally not permitted for regular users, maintaining privacy. A user can only 'get' or 'update' their own profile document (`/users/request.auth.uid`). This naturally supports QAPs as a user's query for their profile is inherently scoped to their `uid`.\n\n2.  **Medicine Scans:** By nesting `medicine_scans` under `/users/{userId}`, users can only `list` or `get` their *own* scans. A query like `db.collection('users').doc(request.auth.uid).collection('medicine_scans')` will only return the authenticated user's scans. The security rules will ensure that the `{userId}` wildcard in the path matches `request.auth.uid`, enforcing this ownership. This structural segregation ensures that `list` operations are always secure and performant, as they are implicitly filtered by the user's identity, eliminating the need for `where()` clauses that rules would otherwise struggle to enforce.\n\nThis design leverages path-based authorization and denormalization to create a robust, secure, and easily debuggable Firestore structure where access control is explicit and efficient, aligning with all mandates for a private, user-centric application like 'Vovó Remédio Fácil'."
+    "reasoning": "The Firestore structure for the 'Vovó Remédio Fácil' application is designed to prioritize security, scalability, and debuggability, adhering strictly to the provided core design principles and mandates."
   }
 }

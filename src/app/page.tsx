@@ -1,7 +1,8 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, Trash2, HelpCircle, ChevronRight, Bell, Camera, User, LogOut, Mail, Chrome } from 'lucide-react';
+import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, Trash2, HelpCircle, ChevronRight, Bell, Camera, User, LogOut, Mail, Chrome, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from '@/components/camera-capture';
 import { LoadingState } from '@/components/loading-state';
@@ -34,6 +35,7 @@ export default function Home() {
   const [prescriptionResult, setPrescriptionResult] = useState<ReadPrescriptionOutput | null>(null);
   const [locationStatus, setLocationStatus] = useState<'IDLE' | 'GETTING' | 'SUCCESS' | 'ERROR'>('IDLE');
   const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Firestore Data
@@ -48,10 +50,12 @@ export default function Home() {
   const { data: scansHistory, isLoading: isHistoryLoading } = useCollection(scansQuery);
 
   const handleGoogleSignIn = async () => {
+    setIsLoggingIn(true);
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      
       // Initialize profile
       await setDoc(doc(db, 'users', user.uid), {
         id: user.uid,
@@ -61,10 +65,25 @@ export default function Home() {
         updatedAt: serverTimestamp(),
         createdAt: serverTimestamp(),
       }, { merge: true });
+      
       toast({ title: "Bem-vinda, vovó!", description: `Que bom ter a senhora aqui, ${user.displayName}!` });
-    } catch (error) {
-      console.error(error);
-      toast({ variant: "destructive", title: "Erro ao entrar", description: "Não conseguimos entrar com o Google agora." });
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      if (error.code === 'auth/operation-not-allowed') {
+        toast({ 
+          variant: "destructive", 
+          title: "Vovó, precisamos de ajuda!", 
+          description: "O login com Google ainda não foi ativado no painel. Por favor, peça para o suporte ativar." 
+        });
+      } else {
+        toast({ 
+          variant: "destructive", 
+          title: "Ih, deu um erro!", 
+          description: "Não conseguimos entrar com o Google agora. Tente novamente mais tarde." 
+        });
+      }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -113,7 +132,7 @@ export default function Home() {
         if (user) {
           addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicine_scans'), {
             userId: user.uid,
-            scannedImageUrl: photoDataUri, // In production, upload to storage first
+            scannedImageUrl: photoDataUri,
             medicineName: output.medicineName,
             simplifiedExplanation: output.simpleExplanation,
             scanDateTime: new Date().toISOString(),
@@ -194,11 +213,11 @@ export default function Home() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 space-y-12 animate-fade-in">
-        <div className="w-32 h-32 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-xl">
+        <div className="w-32 h-32 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-xl animate-bounce">
           <Heart className="w-20 h-20 fill-on-secondary-container" />
         </div>
         <div className="text-center space-y-4 max-w-sm">
-          <h1 className="font-headline text-4xl font-extrabold text-primary">MedGrandma AI</h1>
+          <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight">MedGrandma AI</h1>
           <p className="text-xl text-on-surface-variant font-medium">
             Seu assistente carinhoso para cuidar da saúde. Entre para salvar seus remédios!
           </p>
@@ -206,23 +225,27 @@ export default function Home() {
         <div className="w-full max-w-xs space-y-4">
           <Button 
             onClick={handleGoogleSignIn}
+            disabled={isLoggingIn}
             className="w-full h-16 rounded-full bg-white text-on-surface border-2 border-outline/20 flex items-center justify-center gap-3 text-lg font-bold shadow-md hover:bg-surface-variant transition-all"
           >
-            <Chrome className="w-6 h-6 text-primary" />
-            Entrar com Google
+            {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin text-primary" /> : <Chrome className="w-6 h-6 text-primary" />}
+            {isLoggingIn ? "Entrando..." : "Entrar com Google"}
           </Button>
           <div className="relative py-4">
              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline/10"></div></div>
-             <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">Ou</span></div>
+             <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground font-bold">Ou</span></div>
           </div>
           <Button 
             variant="ghost"
-            className="w-full h-16 rounded-full text-primary font-bold text-lg"
+            className="w-full h-16 rounded-full text-primary font-bold text-lg hover:bg-primary/5"
           >
             <Mail className="w-6 h-6 mr-2" /> Entrar com Email
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground italic">"Um abraço de vovó em cada cuidado."</p>
+        <div className="text-center space-y-1">
+          <p className="text-sm text-muted-foreground italic font-medium">"Um abraço de vovó em cada cuidado."</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Versão 2.0 Luxo</p>
+        </div>
       </div>
     );
   }
@@ -230,28 +253,28 @@ export default function Home() {
   return (
     <div className="bg-background font-body text-on-background min-h-screen flex flex-col selection:bg-primary-container">
       {/* TopAppBar */}
-      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b border-outline/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-secondary-container overflow-hidden flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-secondary-container overflow-hidden flex items-center justify-center border-2 border-white shadow-sm">
             {user.photoURL ? (
               <img src={user.photoURL} alt="Vovó" className="w-full h-full object-cover" />
             ) : (
               <User className="w-6 h-6 text-on-secondary-container" />
             )}
           </div>
-          <h1 className="font-headline text-xl font-extrabold text-primary">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
+          <h1 className="font-headline text-xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
-        <button className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+        <button className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors">
           <HelpCircle className="w-6 h-6" />
         </button>
       </header>
 
-      <main className="flex-1 px-6 pt-4 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
+      <main className="flex-1 px-6 pt-6 pb-32 space-y-8 max-w-2xl mx-auto w-full animate-fade-in">
         
         {appState === 'IDLE' && (
           <>
             <section className="space-y-3">
-              <div className="inline-block px-4 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-bold tracking-widest uppercase">
+              <div className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-bold tracking-widest uppercase shadow-sm">
                 BEM-VINDA AO MEDGRANDMA
               </div>
               <h2 className="font-headline text-4xl leading-tight text-on-background font-extrabold tracking-tight">
@@ -262,7 +285,7 @@ export default function Home() {
             <section className="grid grid-cols-1 gap-6">
               <button 
                 onClick={() => handleStartCapture('MEDICINE')}
-                className="group relative w-full overflow-hidden bg-primary-container rounded-xl p-8 text-left transition-transform active:scale-[0.96] ambient-float"
+                className="group relative w-full overflow-hidden bg-primary-container rounded-2xl p-8 text-left transition-transform active:scale-[0.96] ambient-float border border-white/40"
               >
                 <div className="flex flex-col h-full justify-between gap-6">
                   <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
@@ -278,7 +301,7 @@ export default function Home() {
 
               <button 
                 onClick={() => handleStartCapture('PRESCRIPTION')}
-                className="group relative w-full overflow-hidden bg-secondary-container rounded-xl p-8 text-left transition-transform active:scale-[0.96] ambient-float"
+                className="group relative w-full overflow-hidden bg-secondary-container rounded-2xl p-8 text-left transition-transform active:scale-[0.96] ambient-float border border-white/40"
               >
                 <div className="flex flex-col h-full justify-between gap-6">
                   <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
@@ -292,9 +315,9 @@ export default function Home() {
               </button>
             </section>
 
-            <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden border border-white">
+            <section className="bg-surface-container-low rounded-2xl p-8 relative overflow-hidden border border-white shadow-sm">
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="organic-blob w-20 h-20 bg-tertiary-container flex-shrink-0 flex items-center justify-center">
+                <div className="organic-blob w-20 h-20 bg-tertiary-container flex-shrink-0 flex items-center justify-center shadow-md">
                   <Sparkles className="w-10 h-10 text-on-tertiary-container" />
                 </div>
                 <div className="space-y-1">
@@ -309,7 +332,7 @@ export default function Home() {
 
             <Button
               onClick={() => setShowEmergencyDialog(true)}
-              className="h-20 rounded-xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full border-b-4 border-black/10"
+              className="h-20 rounded-2xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full border-b-4 border-black/10 active:border-b-0 transition-all"
             >
               <PhoneCall className="w-8 h-8" />
               <span className="text-xl font-extrabold uppercase tracking-tight">Emergência (SAMU)</span>
@@ -320,7 +343,7 @@ export default function Home() {
         {appState === 'HISTORY' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
+               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
                  <ArrowLeft className="w-7 h-7 text-primary" />
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minhas Receitas</h2>
@@ -328,30 +351,34 @@ export default function Home() {
             
             <div className="space-y-4">
               {isHistoryLoading ? (
-                <div className="flex justify-center p-20"><LoadingState message="Lembrando..." /></div>
+                <div className="flex flex-col items-center justify-center p-20 gap-4">
+                  <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                  <p className="text-xl font-bold text-primary">Lembrando...</p>
+                </div>
               ) : scansHistory && scansHistory.length > 0 ? (
                 scansHistory.map((item) => (
                   <div 
                     key={item.id} 
                     onClick={() => handleOpenHistoryItem(item)}
-                    className="bg-white rounded-xl p-6 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all soft-float border border-white"
+                    className="bg-white rounded-2xl p-6 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all soft-float border border-white"
                   >
                     <div className="flex items-center gap-5">
-                      <div className="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary">
+                      <div className="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary shadow-inner">
                         <FileText className="w-7 h-7" />
                       </div>
                       <div>
                         <h4 className="font-headline font-bold text-xl text-on-background">{item.medicineName}</h4>
-                        <p className="text-sm text-muted-foreground">{new Date(item.scanDateTime).toLocaleString('pt-BR')}</p>
+                        <p className="text-sm text-muted-foreground font-medium">{new Date(item.scanDateTime).toLocaleString('pt-BR')}</p>
                       </div>
                     </div>
                     <ChevronRight className="w-6 h-6 text-primary/30" />
                   </div>
                 ))
               ) : (
-                <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed">
+                <div className="bg-surface-container-low rounded-2xl p-12 text-center space-y-4 border-2 border-dashed border-outline/10">
                   <History className="w-16 h-16 text-primary/20 mx-auto" />
-                  <p className="text-xl text-muted-foreground font-medium">Sua caixinha de lembranças está vazia!</p>
+                  <p className="text-xl text-muted-foreground font-bold">Sua caixinha de lembranças está vazia!</p>
+                  <Button onClick={() => setAppState('IDLE')} variant="outline" className="rounded-full px-8">Começar Agora</Button>
                 </div>
               )}
             </div>
@@ -361,20 +388,20 @@ export default function Home() {
         {appState === 'ACCOUNT' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
+               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
                  <ArrowLeft className="w-7 h-7 text-primary" />
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minha Conta</h2>
             </div>
 
-            <div className="bg-white p-8 rounded-xl space-y-8 soft-float border border-white">
+            <div className="bg-white p-8 rounded-2xl space-y-8 soft-float border border-white">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-24 h-24 rounded-full bg-secondary-container overflow-hidden border-4 border-white shadow-lg">
                    {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <User className="w-12 h-12" />}
                 </div>
                 <div className="text-center">
                    <h3 className="font-headline text-2xl font-bold">{user.displayName}</h3>
-                   <p className="text-muted-foreground">{user.email}</p>
+                   <p className="text-muted-foreground font-medium">{user.email}</p>
                 </div>
               </div>
 
@@ -389,8 +416,8 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="bg-tertiary-container/20 p-6 rounded-xl text-center space-y-2 italic">
-               <p className="font-medium text-on-tertiary-container">
+            <div className="bg-tertiary-container/20 p-8 rounded-2xl text-center space-y-2 italic border border-tertiary-container/30">
+               <p className="font-bold text-on-tertiary-container text-lg">
                  "Seus dados estão protegidos aqui no meu caderninho digital, viu?"
                </p>
             </div>
@@ -400,35 +427,35 @@ export default function Home() {
         {appState === 'SCHEDULE' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
+               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
                  <ArrowLeft className="w-7 h-7 text-primary" />
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Horários</h2>
             </div>
 
-            <div className="bg-surface-container-low p-8 rounded-xl border-2 border-primary/10 shadow-sm italic">
+            <div className="bg-surface-container-low p-8 rounded-2xl border-2 border-primary/10 shadow-sm italic">
               <div className="flex items-start gap-4">
                 <AlertCircle className="w-6 h-6 text-primary shrink-0 mt-1" />
-                <p className="text-on-background text-lg font-medium leading-relaxed">
+                <p className="text-on-background text-lg font-bold leading-relaxed">
                   Vovó, aqui a senhora pode ver os horários que o médico mandou tomar os remédios para não esquecer!
                 </p>
               </div>
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white p-8 rounded-xl flex items-center justify-between border-l-8 border-primary soft-float">
+              <div className="bg-white p-8 rounded-2xl flex items-center justify-between border-l-8 border-primary soft-float border-t border-r border-b border-white">
                 <div>
                   <span className="bg-primary text-white font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wider">Às 08:00</span>
                   <h4 className="text-2xl font-extrabold text-on-background mt-2">Remédio de Pressão</h4>
-                  <p className="text-on-surface-variant font-medium">1 comprimido em jejum</p>
+                  <p className="text-on-surface-variant font-bold">1 comprimido em jejum</p>
                 </div>
-                <div className="w-14 h-14 bg-surface-container rounded-full flex items-center justify-center pillow-shadow">
-                  <Clock className="w-7 h-7 text-primary" />
+                <div className="w-14 h-14 bg-surface-container rounded-full flex items-center justify-center pillow-shadow text-primary">
+                  <Clock className="w-7 h-7" />
                 </div>
               </div>
             </div>
             
-            <Button className="h-16 w-full rounded-full bg-primary text-white text-lg font-bold shadow-lg">
+            <Button className="h-16 w-full rounded-full bg-primary text-white text-lg font-bold shadow-lg hover:brightness-110 transition-all">
               Adicionar novo horário
             </Button>
           </div>
@@ -504,8 +531,8 @@ export default function Home() {
             onClick={() => setAppState('IDLE')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'IDLE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
-              <Heart className="w-6 h-6" />
+            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'IDLE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant shadow-sm")}>
+              <Heart className="w-6 h-6 fill-current" />
             </div>
             <span className="text-[10px] font-bold text-on-surface-variant">Início</span>
           </button>
@@ -535,20 +562,20 @@ export default function Home() {
 
       {/* Emergency Dialog */}
       <Dialog open={showEmergencyDialog} onOpenChange={setShowEmergencyDialog}>
-        <DialogContent className="max-w-sm rounded-xl p-8 text-center space-y-6 bg-surface border-none shadow-2xl">
+        <DialogContent className="max-w-sm rounded-2xl p-8 text-center space-y-6 bg-surface border-none shadow-2xl">
           <div className="bg-error-container w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner">
             <PhoneCall className="w-12 h-12 text-error" />
           </div>
           <DialogHeader>
             <DialogTitle className="font-headline text-2xl font-extrabold text-error">Chamar o SAMU?</DialogTitle>
-            <DialogDescription className="text-lg font-medium mt-2 text-on-surface">
+            <DialogDescription className="text-lg font-bold mt-2 text-on-surface leading-tight">
               Vovó, a senhora precisa de ajuda urgente? 
               Vou ligar para o 192 agora mesmo.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col gap-3 sm:flex-col">
             <Button 
-              className="h-16 w-full rounded-full bg-error text-white text-xl font-bold shadow-lg"
+              className="h-16 w-full rounded-full bg-error text-white text-xl font-bold shadow-lg active:translate-y-1 transition-all"
               onClick={() => {
                 window.location.href = 'tel:192';
                 setShowEmergencyDialog(false);
@@ -558,7 +585,7 @@ export default function Home() {
             </Button>
             <Button 
               variant="outline" 
-              className="h-12 w-full rounded-full border-2 border-outline/30 text-on-surface-variant font-bold"
+              className="h-12 w-full rounded-full border-2 border-outline/20 text-on-surface-variant font-bold"
               onClick={() => setShowEmergencyDialog(false)}
             >
               Não, foi engano
