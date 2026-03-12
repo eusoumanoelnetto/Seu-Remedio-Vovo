@@ -5,7 +5,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Armazena informações de perfil dos usuários do app Seu Remédio Vovó, permitindo gerenciar leituras de medicamentos e receitas.",
+      "description": "Armazena informações de perfil dos usuários do app Seu Remédio Vovó.",
       "properties": {
         "id": {
           "type": "string",
@@ -70,10 +70,6 @@
           "type": "string",
           "description": "Explicação simplificada gerada pela IA."
         },
-        "rawAiResponse": {
-          "type": "string",
-          "description": "Resposta bruta da IA (opcional)."
-        },
         "scanDateTime": {
           "type": "string",
           "description": "Data e hora da leitura.",
@@ -87,6 +83,35 @@
         "simplifiedExplanation",
         "scanDateTime"
       ]
+    },
+    "ActiveMedicine": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ActiveMedicine",
+      "type": "object",
+      "description": "Remédios que a vovó está tomando atualmente com seus respectivos horários.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID único do remédio na lista ativa."
+        },
+        "name": {
+          "type": "string",
+          "description": "Nome do remédio."
+        },
+        "schedule": {
+          "type": "string",
+          "description": "Horário ou intervalo (ex: de 8 em 8 horas)."
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Finalidade curta do remédio."
+        },
+        "addedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "name", "schedule"]
     }
   },
   "auth": {
@@ -105,13 +130,7 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Perfis de usuários individuais.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "O UID do usuário."
-            }
-          ]
+          "description": "Perfis de usuários individuais."
         }
       },
       {
@@ -121,20 +140,19 @@
           "schema": {
             "$ref": "#/backend/entities/MedicineScan"
           },
-          "description": "Histórico de leituras de medicamentos e receitas do usuário.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "UID do dono do histórico."
-            },
-            {
-              "name": "scanId",
-              "description": "ID único da leitura."
-            }
-          ]
+          "description": "Histórico de leituras de medicamentos e receitas."
+        }
+      },
+      {
+        "path": "/users/{userId}/active_medicines/{medId}",
+        "definition": {
+          "entityName": "ActiveMedicine",
+          "schema": {
+            "$ref": "#/backend/entities/ActiveMedicine"
+          },
+          "description": "Lista de remédios que a vovó toma no dia a dia."
         }
       }
-    ],
-    "reasoning": "Estrutura centrada no usuário para garantir privacidade e facilidade de acesso ao histórico pessoal."
+    ]
   }
 }
