@@ -10,8 +10,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['PT Sans', 'sans-serif'],
-        headline: ['PT Sans', 'sans-serif'],
+        body: ['Lexend', 'sans-serif'],
+        headline: ['Plus Jakarta Sans', 'sans-serif'],
+        label: ['Lexend', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -29,10 +30,14 @@ export default {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
         },
+        'primary-container': 'hsl(var(--primary-container))',
+        'on-primary-container': 'hsl(var(--on-primary-container))',
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
         },
+        'secondary-container': 'hsl(var(--secondary-container))',
+        'on-secondary-container': 'hsl(var(--on-secondary-container))',
         muted: {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
@@ -45,16 +50,17 @@ export default {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        error: 'hsl(var(--destructive))',
+        'surface-container-low': 'hsl(var(--surface-container-low))',
+        'surface-container-high': 'hsl(var(--surface-container-high))',
+        'surface-container-highest': 'hsl(var(--surface-container-highest))',
+        'tertiary-container': 'hsl(var(--tertiary-container))',
+        'on-tertiary-container': 'hsl(var(--on-tertiary-container))',
+        'tertiary-fixed': 'hsl(var(--tertiary-fixed))',
+        'on-tertiary-fixed': 'hsl(var(--on-tertiary-fixed))',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        chart: {
-          '1': 'hsl(var(--chart-1))',
-          '2': 'hsl(var(--chart-2))',
-          '3': 'hsl(var(--chart-3))',
-          '4': 'hsl(var(--chart-4))',
-          '5': 'hsl(var(--chart-5))',
-        },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
@@ -67,9 +73,10 @@ export default {
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        DEFAULT: '1rem',
+        lg: '2rem',
+        xl: '3rem',
+        full: '9999px',
       },
       keyframes: {
         'accordion-down': {

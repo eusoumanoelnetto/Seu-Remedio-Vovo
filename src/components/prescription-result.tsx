@@ -1,9 +1,8 @@
 "use client"
 
 import React, { useState } from 'react';
-import { FileText, MapPin, MessageCircle, RefreshCcw, Heart, Volume2, Loader2, Sparkles } from 'lucide-react';
+import { Volume2, Loader2, Heart, MapPin, MessageCircle, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import type { ReadPrescriptionOutput } from '@/ai/flows/read-prescription-flow';
 import { textToSpeech } from '@/ai/flows/tts-flow';
@@ -16,10 +15,10 @@ interface PrescriptionResultProps {
 export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
   const [loadingAudioIdx, setLoadingAudioIdx] = useState<number | null>(null);
 
-  const handlePlayAudio = async (idx: number, name: string, purpose: string) => {
+  const handlePlayAudio = async (idx: number, name: string, instruction: string) => {
     setLoadingAudioIdx(idx);
     try {
-      const textToRead = `Remédio: ${name}. ${purpose}`;
+      const textToRead = `Remédio: ${name}. Instrução: ${instruction}`;
       const result = await textToSpeech(textToRead);
       const audio = new Audio(result.media);
       audio.play();
@@ -31,147 +30,117 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
   };
 
   return (
-    <div className="flex flex-col space-y-16 animate-fade-in w-full pb-20 relative">
-      {/* Decoração Flutuante */}
-      <div className="absolute -top-10 left-0 opacity-20 animate-bounce duration-[4000ms]">
-        <Heart className="w-12 h-12 text-primary fill-primary" />
-      </div>
+    <div className="space-y-12 animate-fade-in pb-20">
+      {/* Hero Section */}
+      <header className="text-center space-y-3 py-6">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold text-xs uppercase tracking-widest">
+          Inteligência da Vovó
+        </span>
+        <h2 className="font-headline font-extrabold text-4xl text-on-background tracking-tight">Sua Receitinha</h2>
+        <p className="text-on-surface-variant font-medium px-4">
+          A IA da Vovó leu a foto e encontrou esses remédios para você:
+        </p>
+      </header>
 
-      <div className="text-center space-y-6">
-        <div className="relative inline-block">
-          <div className="inline-flex items-center justify-center w-32 h-32 rounded-[3rem] bg-secondary/10 mb-4 border-4 border-white shadow-2xl relative z-10 overflow-hidden">
-             <Image src="https://picsum.photos/seed/paper/200/200" alt="" fill className="object-cover opacity-20" data-ai-hint="old paper texture" />
-             <FileText className="w-16 h-16 text-secondary relative z-20" />
+      {/* Medicines Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {data.medicines.map((med, idx) => (
+          <div key={idx} className="bg-surface-container-low p-6 rounded-xl soft-float border border-white/40 space-y-4 relative group">
+            <div className="relative">
+              <div className={`w-24 h-24 organic-blob-1 flex items-center justify-center mx-auto ${idx % 2 === 0 ? 'bg-primary-container/30' : 'bg-tertiary-container/30'}`}>
+                <Image 
+                  src={idx % 2 === 0 ? "https://lh3.googleusercontent.com/aida-public/AB6AXuDnQo7Uy1BFtGzRHUsJNIVxMKQFBNK_Gp5pfC-79hCLn_bt_3YIQiBs1tqxQXphPv_he-_iFj463suO6ECxN9QRUcDshTAGVzcn8hwAVB8z2Rhi-Mw6NOjdIDTjdfWK5dr_PUeBYYu4tVD4JsVjbD1sfAkWfTT0iZY8UezbMC4HjEnWsV-IF_2M-VaBv1p0c4ve9NbQ7OUqAVPy3PzjqZr2NLzNmdGwYo7YEO7N9_-luvki_ixJpO5MAfyGwJmssXfK88PmM3IxBAM" : "https://lh3.googleusercontent.com/aida-public/AB6AXuADr_YDQtD_SRqGHi0nn_D5DGatLqRMeppeaMrt_8IIAUocDCMdcaugLgIYToj3dAcRsBUJbnd22QnyUyy_Q-WTIjEpmy0nIk0OzTWbFnk0-H4sXJ5KCPeU6vXoUJVujG3euS79DOm-nPkYYEkpGV4BwVxHFjBID4Tdd7H_-Q_EuSMxUE9t_LRPiIO6xdT-pLO3ZF7yfjYGuDR2Lvx6CNEZxGWzklGMfrYeBlWRN7Qt0BuQoiEmf5wH6gzX29aEcF13QFIV0l2IGic"}
+                  alt="Medicine Box"
+                  width={64}
+                  height={64}
+                  className="object-contain drop-shadow-md"
+                />
+              </div>
+              <button 
+                onClick={() => handlePlayAudio(idx, med.name, med.longInstruction)}
+                className="absolute top-0 right-0 p-2 rounded-full bg-white shadow-md text-primary hover:scale-110 transition-transform"
+              >
+                {loadingAudioIdx === idx ? <Loader2 className="w-5 h-5 animate-spin" /> : <Volume2 className="w-5 h-5" />}
+              </button>
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className={`font-headline font-bold text-2xl ${idx % 2 === 0 ? 'text-primary' : 'text-tertiary'}`}>{med.name}</h3>
+              <p className={`font-medium text-sm px-4 py-1.5 rounded-full inline-block italic ${idx % 2 === 0 ? 'bg-secondary-container/50 text-secondary' : 'bg-tertiary-fixed text-tertiary'}`}>
+                {med.shortPurpose}
+              </p>
+            </div>
+            <div className="pillow-shadow bg-surface-container-highest p-5 rounded-lg text-sm leading-relaxed text-on-surface-variant font-medium">
+              {med.longInstruction}
+            </div>
           </div>
-          <div className="absolute -top-4 -right-4 bg-yellow-400 p-2 rounded-full shadow-lg border-2 border-white rotate-12">
-            <Sparkles className="w-6 h-6 text-white" />
+        ))}
+      </section>
+
+      {/* Pharmacy Section */}
+      <section className="space-y-6 pt-4">
+        <div className="space-y-1 px-2">
+          <h2 className="font-headline font-bold text-2xl text-on-background">Farmácias Perto de Você</h2>
+          <p className="text-on-surface-variant text-sm flex items-center gap-1 font-medium">
+            <MapPin className="w-4 h-4 text-primary" />
+            Detectamos sua localização em {data.city || 'sua região'}
+          </p>
+        </div>
+
+        {/* Fake Map */}
+        <div className="relative h-48 rounded-xl overflow-hidden soft-float pillow-shadow">
+          <Image 
+            src="https://picsum.photos/seed/map/800/400" 
+            alt="Mapa" 
+            fill 
+            className="object-cover opacity-80"
+            data-ai-hint="minimalist map"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
+          <div className="absolute inset-0 flex items-center justify-center">
+             <div className="w-8 h-8 bg-primary rounded-full border-4 border-white shadow-xl animate-bounce" />
           </div>
         </div>
-        <div>
-          <h2 className="text-5xl font-bold text-foreground drop-shadow-sm">Receita Lida!</h2>
-          <p className="text-2xl text-primary font-bold mt-2">Encontrei {data.medicines.length} remédios para a senhora:</p>
-        </div>
-      </div>
 
-      {/* Medicamentos */}
-      <div className="space-y-10">
-        <div className="grid gap-10">
-          {data.medicines.map((med, idx) => (
-            <Card key={idx} className="card-elegant border-none overflow-hidden group shadow-2xl hover:shadow-primary/5 transition-all">
-              <CardContent className="p-0">
-                <div className="relative h-64 w-full overflow-hidden">
-                  <Image
-                    src={`https://picsum.photos/seed/${med.imageSeed}/800/400`}
-                    alt={med.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    data-ai-hint="medical box"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-6 left-8 flex items-center gap-3">
-                     <div className="bg-white/90 p-2 rounded-xl shadow-lg backdrop-blur-sm">
-                        <Heart className="w-5 h-5 text-red-500 fill-red-500" />
-                     </div>
-                     <span className="text-white font-bold text-xl drop-shadow-md">Remédio {idx + 1}</span>
-                  </div>
-                </div>
-                <div className="p-10 space-y-8">
-                  <div className="space-y-4">
-                    <h4 className="text-4xl font-bold text-primary break-words leading-tight border-l-8 border-primary pl-6">{med.name}</h4>
-                    <Button 
-                      onClick={() => handlePlayAudio(idx, med.name, med.purpose)}
-                      disabled={loadingAudioIdx !== null}
-                      variant="ghost"
-                      className="flex items-center gap-3 text-primary font-bold text-xl hover:bg-primary/5 p-4 h-auto rounded-2xl border-2 border-primary/10"
-                    >
-                      {loadingAudioIdx === idx ? (
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                      ) : (
-                        <Volume2 className="w-6 h-6" />
-                      )}
-                      <span>Ouvir explicação</span>
-                    </Button>
-                  </div>
-
-                  <div className="bg-primary/5 p-8 rounded-[3rem] border-2 border-primary/10 shadow-inner relative overflow-hidden">
-                    <div className="absolute -bottom-4 -right-4 opacity-5">
-                      <Sparkles className="w-32 h-32 text-primary" />
-                    </div>
-                    <p className="text-2xl text-foreground/90 leading-relaxed font-medium relative z-10">
-                      <span className="font-bold text-primary block mb-2">Pra que serve?</span>
-                      {med.purpose}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Pharmacy List */}
+        <div className="space-y-4">
+          {data.pharmacies.map((pharm, i) => (
+            <div key={i} className="flex items-center gap-4 bg-surface-container p-4 rounded-lg border border-white/20 soft-float">
+              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Heart className={`w-8 h-8 ${i === 0 ? 'text-primary' : i === 1 ? 'text-tertiary' : 'text-secondary'}`} />
+              </div>
+              <div className="flex-grow">
+                <h4 className="font-bold text-on-surface text-lg">{pharm.name}</h4>
+                <p className="text-xs text-on-surface-variant font-medium">{pharm.distance} • {pharm.status}</p>
+              </div>
+              <Button
+                asChild
+                className="bg-[#25D366] hover:bg-[#128C7E] text-white px-4 h-11 rounded-full flex items-center gap-2 shadow-sm"
+              >
+                <a href={`https://wa.me/${pharm.whatsapp}`} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <span className="font-bold text-xs">WhatsApp</span>
+                </a>
+              </Button>
+            </div>
           ))}
         </div>
+      </section>
+
+      {/* Final Message */}
+      <div className="bg-primary-container/20 p-8 rounded-xl text-center space-y-4 border-2 border-dashed border-primary/20">
+        <Heart className="w-12 h-12 text-primary mx-auto fill-primary" />
+        <p className="font-headline font-bold text-primary italic text-lg">
+          "Não esqueça de tomar uma aguinha também, viu, meu anjo?"
+        </p>
       </div>
 
-      {/* Farmácias */}
-      <div className="space-y-10">
-        <div className="flex flex-col items-center gap-4 px-4 text-center">
-          <div className="bg-secondary p-4 rounded-[1.5rem] shadow-lg rotate-3">
-            <MapPin className="w-10 h-10 text-white" />
-          </div>
-          <h3 className="text-3xl font-bold text-foreground">Onde encontrar pertinho da senhora:</h3>
-        </div>
-
-        <div className="grid gap-8">
-          {data.pharmacies.map((pharm, idx) => (
-            <Card key={idx} className="card-elegant border-none bg-white/80 backdrop-blur-md relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-2 h-full bg-secondary" />
-              <CardContent className="p-10 space-y-8">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start gap-4">
-                    <h4 className="text-3xl font-bold text-foreground leading-tight">{pharm.name}</h4>
-                    <span className="shrink-0 bg-secondary/10 text-secondary text-lg font-bold px-6 py-2 rounded-full border-2 border-secondary/20 shadow-sm">
-                      {pharm.distance}
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-6 h-6 text-secondary shrink-0 mt-1" />
-                    <p className="text-xl text-muted-foreground leading-snug font-medium">{pharm.address}</p>
-                  </div>
-                </div>
-                
-                <Button
-                  asChild
-                  className="w-full h-24 rounded-[3rem] bg-[#25D366] hover:bg-[#128C7E] text-white text-2xl font-bold shadow-2xl btn-hover border-b-8 border-[#128C7E]/40"
-                >
-                  <a 
-                    href={`https://wa.me/55${pharm.whatsapp}?text=Olá,%20vi%20sua%20farmácia%20no%20Vovó%20Remédio%20e%20gostaria%20de%20saber%20o%20preço%20destes%20itens.`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-4"
-                  >
-                    <MessageCircle className="w-10 h-10" />
-                    Chamar no Zap
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      <div className="pt-16 px-4 space-y-10">
-        <div className="flex flex-col items-center justify-center gap-4 text-primary/60 font-bold italic bg-primary/5 p-8 rounded-[3rem] border-2 border-dashed border-primary/20">
-          <div className="flex items-center gap-2">
-            <Heart className="w-8 h-8 fill-primary/20" />
-            <span className="text-2xl">Cuidamos da senhora!</span>
-          </div>
-          <p className="text-lg text-center opacity-80">Qualquer dúvida, pergunte ao seu médico de confiança.</p>
-        </div>
-        <Button
-          onClick={onReset}
-          className="w-full h-28 text-3xl font-bold rounded-[3.5rem] shadow-2xl btn-hover bg-primary text-white border-b-8 border-primary-foreground/10"
-        >
-          <RefreshCcw className="w-10 h-10 mr-4" />
-          Voltar ao Início
-        </Button>
-      </div>
+      <Button
+        onClick={onReset}
+        className="w-full h-16 text-xl font-bold rounded-full bg-primary text-white shadow-xl flex items-center justify-center gap-3"
+      >
+        <RefreshCcw className="w-6 h-6" />
+        Voltar ao Início
+      </Button>
     </div>
   );
 }

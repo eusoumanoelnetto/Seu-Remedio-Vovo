@@ -6,9 +6,9 @@
   :root {
     --background: 36 100% 97%; /* #fff8ef */
     --foreground: 45 22% 10%; /* #1e1b13 */
-    --card: 36 100% 100%;
+    --card: 0 0% 100%;
     --card-foreground: 45 22% 10%;
-    --popover: 36 100% 100%;
+    --popover: 0 0% 100%;
     --popover-foreground: 45 22% 10%;
     --primary: 208 31% 37%; /* #42617d */
     --primary-foreground: 0 0% 100%;
@@ -23,9 +23,9 @@
     --border: 210 20% 90%;
     --input: 210 20% 90%;
     --ring: 208 31% 37%;
-    --radius: 2rem;
+    --radius: 1rem;
 
-    /* Custom MD3 style colors */
+    /* Material 3 Custom Colors */
     --primary-container: 210 56% 78%; /* #a7c7e7 */
     --on-primary-container: 208 36% 32%; /* #34536f */
     --secondary-container: 150 42% 84%; /* #c6e7d6 */
@@ -34,6 +34,9 @@
     --on-tertiary-container: 20 32% 32%; /* #6c4837 */
     --surface-container-low: 40 60% 94%; /* #fbf3e4 */
     --surface-container-high: 39 33% 90%; /* #efe7d9 */
+    --surface-container-highest: 39 19% 86%; /* #e9e2d3 */
+    --tertiary-fixed: 18 100% 92%; /* #ffdbcc */
+    --on-tertiary-fixed: 20 60% 10%; /* #2f1407 */
   }
 }
 
@@ -42,30 +45,32 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/20;
-    font-size: 18px;
-    line-height: 1.6;
+    @apply bg-background text-foreground antialiased;
+    font-size: 16px;
+  }
+  ::selection {
+    background-color: hsl(var(--primary-container));
   }
 }
 
 .pillow-shadow {
-  box-shadow: inset 0px 4px 12px rgba(30, 27, 19, 0.08);
+  box-shadow: inset 4px 4px 12px rgba(30, 27, 19, 0.08);
 }
 
-.ambient-float {
+.soft-float {
   box-shadow: 0px 20px 40px rgba(66, 97, 125, 0.05);
 }
 
-.organic-blob {
+.organic-blob-1 {
   border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
 }
 
-.font-headline {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeIn 0.5s ease-out forwards;
 }
 
 @keyframes fadeIn {

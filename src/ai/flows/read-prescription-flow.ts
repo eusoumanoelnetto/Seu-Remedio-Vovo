@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Um fluxo Genkit para ler receitas médicas, identificar remédios e sugerir farmácias baseando-se na localização real.
@@ -19,20 +18,23 @@ export type ReadPrescriptionInput = z.infer<typeof ReadPrescriptionInputSchema>;
 
 const MedicineInfoSchema = z.object({
   name: z.string().describe('Nome exato do medicamento encontrado na receita.'),
-  purpose: z.string().describe('Explicação simples para que serve.'),
+  shortPurpose: z.string().describe('Explicação curtíssima em aspas (ex: "Para baixar a pressão").'),
+  longInstruction: z.string().describe('Instrução detalhada de como tomar, em linguagem carinhosa para idosos.'),
   imageSeed: z.string().describe('Uma palavra simples em inglês para gerar uma imagem ilustrativa (ex: pill, syrup).'),
 });
 
 const PharmacyInfoSchema = z.object({
   name: z.string().describe('Nome da farmácia.'),
   address: z.string().describe('Endereço da farmácia.'),
-  whatsapp: z.string().describe('Número do WhatsApp formatado para link (apenas números com DDD).'),
-  distance: z.string().describe('Distância estimada (ex: 500m).'),
+  whatsapp: z.string().describe('Número do WhatsApp formatado (ex: 11999999999).'),
+  distance: z.string().describe('Distância estimada (ex: 350m).'),
+  status: z.string().describe('Status curto (ex: Aberta agora, Entrega rápida).'),
 });
 
 const ReadPrescriptionOutputSchema = z.object({
   medicines: z.array(MedicineInfoSchema).describe('Lista de medicamentos identificados.'),
   pharmacies: z.array(PharmacyInfoSchema).describe('As 3 farmácias mais próximas e confiáveis da região.'),
+  city: z.string().describe('Cidade detectada do usuário.'),
 });
 export type ReadPrescriptionOutput = z.infer<typeof ReadPrescriptionOutputSchema>;
 
@@ -48,14 +50,14 @@ const readPrescriptionPrompt = ai.definePrompt({
   output: {schema: ReadPrescriptionOutputSchema},
   prompt: `Você é um assistente farmacêutico gentil para idosos. 
 Sua tarefa é ler a foto de uma RECEITA MÉDICA e:
-1. Identificar EXATAMENTE os nomes dos remédios escritos. Seja extremamente preciso, pois erros podem ser perigosos.
-2. Explicar de forma muito simples (linguagem para vovós) para que servem.
-3. Sugerir 3 farmácias REAIS próximas à localização do usuário: {{userLocation}}. 
-   Se a localização for coordenadas (Lat/Long), use-as para encontrar farmácias reais naquela área.
-   Dê preferência a redes grandes conhecidas (como Droga Raia, Drogasil, Pague Menos) ou farmácias locais populares.
-4. Fornecer o número de WhatsApp dessas farmácias (se não souber o real, use um formato padrão verossímil da região).
+1. Identificar EXATAMENTE os nomes dos remédios.
+2. Fornecer um "shortPurpose" (ex: "Para baixar a pressão") e uma "longInstruction" (instrução detalhada e carinhosa).
+3. Sugerir 3 farmácias REAIS próximas à localização: {{userLocation}}. Use farmácias reais da região.
+4. Fornecer o WhatsApp real ou verossímil da região.
 
-Seja muito claro e use linguagem popular e acolhedora.
+Cidade atual: {{userLocation}}.
+
+Seja acolhedor e use linguagem popular.
 
 Photo: {{media url=photoDataUri}}`,
 });
