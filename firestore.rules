@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * VOVÓ REMÉDIO FÁCIL - SECURITY RULES CONFIGURATION
+     *
+     * Core Philosophy:
+     * This ruleset enforces a strict user-ownership model. The application is designed to be 
+     * entirely private, where users can only access data they have created. There is no 
+     * public-facing content or shared collaborative data in this version.
+     *
+     * Data Structure:
+     * The database follows a user-centric hierarchy. All personal information and history 
+     * are organized under the path /users/{userId}.
+     * - User Profiles: Stored at /users/{userId}.
+     * - Medicine Scans: Stored as a subcollection at /users/{userId}/medicine_scans/{scanId}.
+     *
+     * Key Security Decisions:
+     * 1. Private Posture: Listing the 'users' collection is forbidden to prevent user discovery.
+     * 2. Identity Verification: All read and write operations require a valid Firebase 
+     *    Authentication token where the UID matches the document's owner.
+     * 3. Denormalization for Authorization: The 'userId' is denormalized within medicine 
+     *    scan documents. This allows rules to verify ownership by comparing the auth UID 
+     *    to the document data directly, ensuring authorization independence.
+     * 4. Structural Segregation: By using user-specific subcollections, list operations 
+     *    for medicine scans are inherently scoped and secure.
+     * 5. Prototyping Flexibility: While authorization is strictly enforced, data schemas 
+     *    (field types and optionality) are not strictly validated to allow for rapid 
+     *    development of the scanning and AI features.
+     */
+
+    // --- Helper Functions ---
+
+    /** @description Checks if the request is made by a signed-in user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the authenticated user's UID matches the provided userId. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Combines ownership check with a check that the document already exists. */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for the UserProfile entity, allowing users to manage their own profile.
+     * @path /users/{userId}
+     * @allow (get) If auth.uid matches {userId}.
+     * @deny (list) Global listing of users is always forbidden.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Rules for MedicineScan entities, allowing users to view and manage their scan history.
+       * @path /users/{userId}/medicine_scans/{scanId}
+       * @allow (list) If auth.uid matches the parent {userId}.
+       * @deny (create) If the internal 'userId' field does not match the path's {userId}.
+       * @principle Enforces document ownership for writes and validates relational integrity.
+       */
+      match /medicine_scans/{scanId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+  }
+}
