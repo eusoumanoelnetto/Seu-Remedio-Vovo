@@ -1,29 +1,42 @@
-
 "use client"
 
 import React, { useState, useRef } from 'react';
-import { Camera, Heart, Stethoscope, Image as ImageIcon } from 'lucide-react';
+import { Camera, Heart, Stethoscope, Image as ImageIcon, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from '@/components/camera-capture';
 import { LoadingState } from '@/components/loading-state';
 import { MedicineResult } from '@/components/medicine-result';
+import { PrescriptionResult } from '@/components/prescription-result';
 import { explainMedicine } from '@/ai/flows/medicine-explanation';
+import { readPrescription } from '@/ai/flows/read-prescription-flow';
 import type { MedicineExplanationOutput } from '@/ai/flows/medicine-explanation';
+import type { ReadPrescriptionOutput } from '@/ai/flows/read-prescription-flow';
 
+type AppMode = 'MEDICINE' | 'PRESCRIPTION';
 type AppState = 'IDLE' | 'CAPTURING' | 'PROCESSING' | 'RESULT';
 
 export default function Home() {
+  const [appMode, setAppMode] = useState<AppMode>('MEDICINE');
   const [appState, setAppState] = useState<AppState>('IDLE');
-  const [result, setResult] = useState<MedicineExplanationOutput | null>(null);
+  const [medicineResult, setMedicineResult] = useState<MedicineExplanationOutput | null>(null);
+  const [prescriptionResult, setPrescriptionResult] = useState<ReadPrescriptionOutput | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleStartCapture = () => setAppState('CAPTURING');
+  const handleStartCapture = (mode: AppMode) => {
+    setAppMode(mode);
+    setAppState('CAPTURING');
+  };
   
   const handlePhotoCaptured = async (photoDataUri: string) => {
     setAppState('PROCESSING');
     try {
-      const output = await explainMedicine({ photoDataUri });
-      setResult(output);
+      if (appMode === 'MEDICINE') {
+        const output = await explainMedicine({ photoDataUri });
+        setMedicineResult(output);
+      } else {
+        const output = await readPrescription({ photoDataUri });
+        setPrescriptionResult(output);
+      }
       setAppState('RESULT');
     } catch (error) {
       console.error("AI processing error:", error);
@@ -32,7 +45,8 @@ export default function Home() {
     }
   };
 
-  const handleFileClick = () => {
+  const handleFileClick = (mode: AppMode) => {
+    setAppMode(mode);
     fileInputRef.current?.click();
   };
 
@@ -49,13 +63,13 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    setResult(null);
+    setMedicineResult(null);
+    setPrescriptionResult(null);
     setAppState('IDLE');
   };
 
   return (
     <main className="max-w-md mx-auto min-h-screen flex flex-col p-6 font-body">
-      {/* Header */}
       <header className="flex items-center justify-center space-x-3 py-8">
         <div className="bg-primary p-3 rounded-2xl shadow-md">
           <Heart className="w-8 h-8 text-white fill-white" />
@@ -67,54 +81,52 @@ export default function Home() {
 
       <div className="flex-1 flex flex-col items-center justify-center">
         {appState === 'IDLE' && (
-          <div className="flex flex-col items-center justify-center space-y-8 text-center animate-in fade-in zoom-in duration-500 w-full">
+          <div className="flex flex-col items-center justify-center space-y-6 text-center animate-in fade-in zoom-in duration-500 w-full">
             <div className="space-y-4">
               <h2 className="text-4xl font-bold text-foreground leading-tight px-4">
-                Olá! Vamos ver para que serve seu remédio?
+                Olá! O que vamos fazer hoje?
               </h2>
-              <p className="text-2xl text-muted-foreground font-medium">
-                Escolha uma das opções abaixo:
-              </p>
             </div>
             
-            <div className="flex flex-col space-y-6 w-full px-4">
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-primary/10 rounded-[3rem] blur-2xl group-hover:bg-primary/20 transition-all" />
-                <Button
-                  onClick={handleStartCapture}
-                  className="relative w-full h-40 rounded-[2.5rem] flex flex-col items-center justify-center space-y-3 shadow-xl text-2xl font-bold bg-primary text-white hover:scale-[1.02] transition-transform active:scale-95"
-                >
-                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                    <Camera className="w-10 h-10" />
-                  </div>
-                  <span>Tirar Foto Agora</span>
-                </Button>
+            <div className="flex flex-col space-y-4 w-full px-4">
+              {/* Opção de Ler Remédio */}
+              <div className="space-y-2">
+                <p className="text-xl text-primary font-bold">Ver um remédio:</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={() => handleStartCapture('MEDICINE')}
+                    className="h-32 rounded-3xl flex flex-col items-center justify-center space-y-2 shadow-lg bg-primary text-white"
+                  >
+                    <Camera className="w-8 h-8" />
+                    <span className="text-lg">Tirar Foto</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleFileClick('MEDICINE')}
+                    variant="secondary"
+                    className="h-32 rounded-3xl flex flex-col items-center justify-center space-y-2 shadow-lg"
+                  >
+                    <ImageIcon className="w-8 h-8" />
+                    <span className="text-lg">Da Galeria</span>
+                  </Button>
+                </div>
               </div>
 
-              <div className="relative group">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/*"
-                  className="hidden"
-                />
+              {/* Opção de Ler Receita */}
+              <div className="space-y-2 pt-4">
+                <p className="text-xl text-secondary font-bold">Ler uma Receita:</p>
                 <Button
-                  onClick={handleFileClick}
-                  variant="secondary"
-                  className="relative w-full h-32 rounded-[2.5rem] flex flex-col items-center justify-center space-y-2 shadow-lg text-xl font-bold hover:scale-[1.02] transition-transform active:scale-95"
+                  onClick={() => handleStartCapture('PRESCRIPTION')}
+                  className="w-full h-32 rounded-3xl flex flex-col items-center justify-center space-y-2 shadow-xl bg-secondary text-secondary-foreground"
                 >
-                  <div className="w-14 h-14 bg-white/40 rounded-full flex items-center justify-center">
-                    <ImageIcon className="w-8 h-8 text-primary" />
-                  </div>
-                  <span>Pegar da Galeria</span>
+                  <FileText className="w-10 h-10" />
+                  <span className="text-xl font-bold">Tirar Foto da Receita</span>
                 </Button>
               </div>
             </div>
 
             <div className="flex items-center space-x-2 text-primary font-bold pt-4">
               <Stethoscope className="w-6 h-6" />
-              <span className="text-xl italic">Simples e fácil como a vovó gosta!</span>
+              <span className="text-xl italic">Tudo bem simples pra senhora!</span>
             </div>
           </div>
         )}
@@ -130,16 +142,33 @@ export default function Home() {
           <LoadingState />
         )}
 
-        {appState === 'RESULT' && result && (
-          <MedicineResult
-            medicineName={result.medicineName}
-            explanation={result.simpleExplanation}
-            onReset={handleReset}
-          />
+        {appState === 'RESULT' && (
+          <>
+            {medicineResult && (
+              <MedicineResult
+                medicineName={medicineResult.medicineName}
+                explanation={medicineResult.simpleExplanation}
+                onReset={handleReset}
+              />
+            )}
+            {prescriptionResult && (
+              <PrescriptionResult
+                data={prescriptionResult}
+                onReset={handleReset}
+              />
+            )}
+          </>
         )}
       </div>
 
-      {/* Accessibility hint at footer if IDLE */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
+
       {appState === 'IDLE' && (
         <footer className="py-6 text-center text-muted-foreground/60 text-lg">
           Vovó Remédio Fácil - 2024
