@@ -2,7 +2,7 @@
 "use client"
 
 import React, { useState, useRef } from 'react';
-import { Chrome, Loader2, Heart } from 'lucide-react';
+import { Chrome, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from '@/components/camera-capture';
 import { LoadingState } from '@/components/loading-state';
@@ -69,7 +69,7 @@ export default function Home() {
       toast({ 
         variant: "destructive", 
         title: "Ih, deu um erro!", 
-        description: "Não conseguimos entrar com o Google agora. Peça para alguém ativar o 'Google' em 'Authentication' no Console do Firebase." 
+        description: "Não conseguimos entrar com o Google agora. Verifique se o login do Google está ativado no Firebase Console." 
       });
     } finally {
       setIsLoggingIn(false);
@@ -217,18 +217,19 @@ export default function Home() {
       {/* TopAppBar */}
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-sm border-2 border-white overflow-hidden">
+          <button 
+            onClick={() => setAppState('CONTA')}
+            className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-sm border-2 border-white overflow-hidden active:scale-95 transition-transform"
+          >
             {user.photoURL ? (
               <img src={user.photoURL} alt="Vovó" className="w-full h-full object-cover" />
             ) : (
               <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>face_6</span>
             )}
-          </div>
+          </button>
           <h1 className="font-headline text-xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
-        <button onClick={() => setAppState('CONTA')} className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors">
-          <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 0" }}>account_circle</span>
-        </button>
+        {/* Account button removed as per user request, avatar is now clickable */}
       </header>
 
       <main className="flex-1 px-6 pt-4 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
@@ -295,20 +296,6 @@ export default function Home() {
               </div>
               <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed opacity-20 rounded-full -mr-16 -mt-16"></div>
             </section>
-
-            {/* Next Med Card */}
-            <div 
-              onClick={() => setAppState('AVISO')}
-              className="bg-surface-container-high rounded-full p-6 flex items-center justify-between ambient-float border border-white cursor-pointer active:scale-95 transition-all"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center pillow-shadow">
-                  <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>notifications_active</span>
-                </div>
-                <span className="font-bold text-lg text-on-surface">Seu próximo remédio é às 15:00</span>
-              </div>
-              <span className="material-symbols-outlined text-primary">chevron_right</span>
-            </div>
 
             {/* Emergency Button */}
             <Button
