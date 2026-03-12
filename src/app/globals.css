@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,10 +63,6 @@
   box-shadow: 0px 20px 40px rgba(66, 97, 125, 0.05);
 }
 
-.organic-blob {
-  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-}
-
 .organic-blob-1 {
   border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
 }
@@ -77,4 +74,10 @@
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Kawaii Selection Style */
+::selection {
+  background-color: #a7c7e7;
+  color: #1e1b13;
 }

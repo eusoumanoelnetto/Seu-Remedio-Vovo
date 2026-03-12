@@ -23,6 +23,57 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 type AppMode = 'MEDICINE' | 'PRESCRIPTION';
 type AppState = 'INICIO' | 'CAPTURING' | 'PROCESSING' | 'RESULT' | 'RECEITAS' | 'AVISO' | 'CONTA';
 
+// Ícones Fofos (Kawaii Style)
+const KawaiiHome = ({ active }: { active?: boolean }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 14L16 4L28 14V26C28 27.1046 27.1046 28 26 28H6C4.89543 28 4 27.1046 4 26V14Z" fill={active ? "#a7c7e7" : "#f5edde"} stroke="#1e1b13" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <rect x="12" y="18" width="8" height="10" fill="white" stroke="#1e1b13" strokeWidth="2"/>
+    <circle cx="11" cy="12" r="1.5" fill="#1e1b13"/>
+    <circle cx="21" cy="12" r="1.5" fill="#1e1b13"/>
+    <path d="M14 14.5C14.5 15 17.5 15 18 14.5" stroke="#1e1b13" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const KawaiiMedicine = ({ active }: { active?: boolean }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="8" y="10" width="16" height="18" rx="4" fill={active ? "#a7c7e7" : "#f5edde"} stroke="#1e1b13" strokeWidth="2"/>
+    <rect x="6" y="4" width="20" height="6" rx="2" fill="#eab9a4" stroke="#1e1b13" strokeWidth="2"/>
+    <circle cx="13" cy="18" r="1" fill="#1e1b13"/>
+    <circle cx="19" cy="18" r="1" fill="#1e1b13"/>
+    <path d="M14 21C14.5 22 17.5 22 18 21" stroke="#1e1b13" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const KawaiiPrescription = ({ active }: { active?: boolean }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 4H20L26 10V28C26 29.1046 25.1046 30 24 30H6C4.89543 30 4 29.1046 4 28V6C4 4.89543 4.89543 4 6 4Z" fill={active ? "#a7c7e7" : "#f5edde"} stroke="#1e1b13" strokeWidth="2"/>
+    <path d="M11 12H21" stroke="#1e1b13" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M11 18H21" stroke="#1e1b13" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="13" cy="24" r="1" fill="#1e1b13"/>
+    <circle cx="19" cy="24" r="1" fill="#1e1b13"/>
+    <path d="M14 26C14.5 27 17.5 27 18 26" stroke="#1e1b13" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const KawaiiAccount = ({ active }: { active?: boolean }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="12" fill={active ? "#a7c7e7" : "#f5edde"} stroke="#1e1b13" strokeWidth="2"/>
+    <circle cx="16" cy="12" r="5" fill="white" stroke="#1e1b13" strokeWidth="2"/>
+    <path d="M6 26C6 22 10 20 16 20C22 20 26 22 26 26" stroke="#1e1b13" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+
+const KawaiiAviso = ({ active }: { active?: boolean }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 4C10 4 8 8 8 14V22H24V14C24 8 22 4 16 4Z" fill={active ? "#eab9a4" : "#f5edde"} stroke="#1e1b13" strokeWidth="2"/>
+    <rect x="6" y="22" width="20" height="4" rx="2" fill="#c6e7d6" stroke="#1e1b13" strokeWidth="2"/>
+    <circle cx="16" cy="28" r="2" fill="#1e1b13"/>
+    <circle cx="13" cy="12" r="1" fill="#1e1b13"/>
+    <circle cx="19" cy="12" r="1" fill="#1e1b13"/>
+    <path d="M14 15C14.5 16 17.5 16 18 15" stroke="#1e1b13" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
 export default function Home() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
@@ -186,8 +237,13 @@ export default function Home() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 space-y-12 animate-fade-in selection:bg-primary-container">
-        <div className="w-32 h-32 organic-blob bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-xl animate-bounce">
-          <span className="material-symbols-outlined text-7xl" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
+        <div className="w-32 h-32 organic-blob bg-secondary-container flex items-center justify-center shadow-xl animate-bounce border-2 border-[#1e1b13]">
+          <svg width="64" height="64" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 28C16 28 4 20 4 10C4 6 8 4 12 4C14 4 15 5 16 6C17 5 18 4 20 4C24 4 28 6 28 10C28 20 16 28 16 28Z" fill="#eab9a4" stroke="#1e1b13" strokeWidth="2"/>
+            <circle cx="12" cy="10" r="1.5" fill="#1e1b13"/>
+            <circle cx="20" cy="10" r="1.5" fill="#1e1b13"/>
+            <path d="M14 13C14.5 14 17.5 14 18 13" stroke="#1e1b13" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
         </div>
         <div className="text-center space-y-4 max-w-sm">
           <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight leading-tight">Seu Remédio Vovó</h1>
@@ -199,7 +255,7 @@ export default function Home() {
           <Button 
             onClick={handleGoogleSignIn}
             disabled={isLoggingIn}
-            className="w-full h-16 rounded-full bg-white text-on-surface border-2 border-outline/20 flex items-center justify-center gap-3 text-lg font-bold shadow-md hover:bg-surface-variant transition-all"
+            className="w-full h-16 rounded-full bg-white text-on-surface border-4 border-[#1e1b13] flex items-center justify-center gap-3 text-lg font-bold shadow-[4px_4px_0px_#1e1b13] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#1e1b13] transition-all"
           >
             {isLoggingIn ? <Loader2 className="w-6 h-6 animate-spin text-primary" /> : <Chrome className="w-6 h-6 text-primary" />}
             {isLoggingIn ? "Entrando..." : "Entrar com Google"}
@@ -215,21 +271,23 @@ export default function Home() {
   return (
     <div className="bg-background font-body text-on-background min-h-screen flex flex-col selection:bg-primary-container">
       {/* TopAppBar */}
-      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b border-[#1e1b13]/10">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setAppState('CONTA')}
-            className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-sm border-2 border-white overflow-hidden active:scale-95 transition-transform"
+            className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-sm border-2 border-[#1e1b13] overflow-hidden active:scale-95 transition-transform"
           >
             {user.photoURL ? (
               <img src={user.photoURL} alt="Vovó" className="w-full h-full object-cover" />
             ) : (
-              <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>face_6</span>
+              <KawaiiAccount active />
             )}
           </button>
           <h1 className="font-headline text-xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
-        {/* Account button removed as per user request, avatar is now clickable */}
+        <button className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant border-2 border-[#1e1b13]">
+          <span className="material-symbols-outlined text-2xl">help_outline</span>
+        </button>
       </header>
 
       <main className="flex-1 px-6 pt-4 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
@@ -237,7 +295,7 @@ export default function Home() {
         {appState === 'INICIO' && (
           <>
             <section className="text-center space-y-2 py-6">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold text-xs uppercase tracking-widest">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold text-xs uppercase tracking-widest border-2 border-[#1e1b13]">
                 ABRAÇO DE VOVÓ
               </span>
               <h2 className="font-headline text-4xl leading-tight text-on-background font-extrabold tracking-tight">
@@ -250,11 +308,11 @@ export default function Home() {
               {/* Action 1: Remédio */}
               <button 
                 onClick={() => handleStartCapture('MEDICINE')}
-                className="group relative w-full overflow-hidden bg-primary-container rounded-xl p-8 text-left transition-transform active:scale-[0.96] ambient-float border border-white/40"
+                className="group relative w-full overflow-hidden bg-primary-container rounded-xl p-8 text-left transition-transform active:scale-[0.98] ambient-float border-2 border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13]"
               >
                 <div className="flex flex-col h-full justify-between gap-6">
-                  <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
-                    <span className="material-symbols-outlined text-primary text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>medication</span>
+                  <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow border-2 border-[#1e1b13]">
+                    <KawaiiMedicine active />
                   </div>
                   <div>
                     <h3 className="font-headline text-3xl text-on-primary-container mb-2 font-extrabold">Tirar Foto do Remédio</h3>
@@ -267,11 +325,11 @@ export default function Home() {
               {/* Action 2: Receita */}
               <button 
                 onClick={() => handleStartCapture('PRESCRIPTION')}
-                className="group relative w-full overflow-hidden bg-secondary-container rounded-xl p-8 text-left transition-transform active:scale-[0.96] ambient-float border border-white/40"
+                className="group relative w-full overflow-hidden bg-secondary-container rounded-xl p-8 text-left transition-transform active:scale-[0.98] ambient-float border-2 border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13]"
               >
                 <div className="flex flex-col h-full justify-between gap-6">
-                  <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
-                    <span className="material-symbols-outlined text-secondary text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+                  <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow border-2 border-[#1e1b13]">
+                    <KawaiiPrescription active />
                   </div>
                   <div>
                     <h3 className="font-headline text-3xl text-on-secondary-container mb-2 font-extrabold">Ler Receita Médica</h3>
@@ -282,10 +340,16 @@ export default function Home() {
             </section>
 
             {/* Dica Card */}
-            <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden border border-white shadow-sm">
+            <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden border-2 border-[#1e1b13]">
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="organic-blob w-24 h-24 bg-tertiary-container flex-shrink-0 flex items-center justify-center shadow-md">
-                  <span className="material-symbols-outlined text-on-tertiary-container text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                <div className="organic-blob w-24 h-24 bg-tertiary-container flex-shrink-0 flex items-center justify-center border-2 border-[#1e1b13] shadow-md">
+                   <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="16" cy="16" r="12" fill="#ffdbcc" stroke="#1e1b13" strokeWidth="2"/>
+                    <circle cx="13" cy="14" r="1.5" fill="#1e1b13"/>
+                    <circle cx="19" cy="14" r="1.5" fill="#1e1b13"/>
+                    <path d="M14 18C14.5 19 17.5 19 18 18" stroke="#1e1b13" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M16 6V8" stroke="#1e1b13" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
                 </div>
                 <div className="space-y-2">
                   <h4 className="font-headline text-xl font-bold text-tertiary">Dica da Vovó</h4>
@@ -300,7 +364,7 @@ export default function Home() {
             {/* Emergency Button */}
             <Button
               onClick={() => setShowEmergencyDialog(true)}
-              className="h-20 rounded-xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full border-b-4 border-black/10 active:border-b-0 transition-all"
+              className="h-20 rounded-xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-[6px_6px_0px_#1e1b13] w-full border-2 border-[#1e1b13] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0px_#1e1b13] transition-all"
             >
               <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>emergency</span>
               <span className="text-xl font-extrabold uppercase tracking-tight">Chamar Ambulância</span>
@@ -311,7 +375,7 @@ export default function Home() {
         {appState === 'RECEITAS' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center border-2 border-[#1e1b13] hover:bg-surface-container-highest transition-colors">
                  <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minhas Receitas</h2>
@@ -328,25 +392,25 @@ export default function Home() {
                   <div 
                     key={item.id} 
                     onClick={() => handleOpenHistoryItem(item)}
-                    className="bg-white rounded-xl p-6 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all soft-float border border-white"
+                    className="bg-white rounded-xl p-6 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all border-2 border-[#1e1b13] shadow-[4px_4px_0px_#1e1b13]"
                   >
                     <div className="flex items-center gap-5">
-                      <div className="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary shadow-inner">
-                        <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+                      <div className="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary shadow-inner border-2 border-[#1e1b13]">
+                        <KawaiiPrescription />
                       </div>
                       <div>
                         <h4 className="font-headline font-bold text-xl text-on-background">{item.medicineName}</h4>
                         <p className="text-sm text-muted-foreground font-medium">{new Date(item.scanDateTime).toLocaleString('pt-BR')}</p>
                       </div>
                     </div>
-                    <span className="material-symbols-outlined text-primary/30">chevron_right</span>
+                    <span className="material-symbols-outlined text-primary/30 text-3xl">chevron_right</span>
                   </div>
                 ))
               ) : (
-                <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed border-outline/10">
-                  <span className="material-symbols-outlined text-6xl text-primary/20 mx-auto" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
+                <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed border-[#1e1b13]/20">
+                  <KawaiiPrescription />
                   <p className="text-xl text-muted-foreground font-bold">Sua caixinha de lembranças está vazia!</p>
-                  <Button onClick={() => setAppState('INICIO')} variant="outline" className="rounded-full px-8">Começar Agora</Button>
+                  <Button onClick={() => setAppState('INICIO')} variant="outline" className="rounded-full px-8 border-2 border-[#1e1b13]">Começar Agora</Button>
                 </div>
               )}
             </div>
@@ -356,16 +420,16 @@ export default function Home() {
         {appState === 'CONTA' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center border-2 border-[#1e1b13] hover:bg-surface-container-highest transition-colors">
                  <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minha Conta</h2>
             </div>
 
-            <div className="bg-white p-8 rounded-xl space-y-8 soft-float border border-white">
+            <div className="bg-white p-8 rounded-xl space-y-8 border-2 border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13]">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-24 h-24 rounded-full bg-secondary-container overflow-hidden border-4 border-white shadow-lg">
-                   {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>face_6</span>}
+                <div className="w-24 h-24 rounded-full bg-secondary-container overflow-hidden border-4 border-[#1e1b13] shadow-lg">
+                   {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <KawaiiAccount active />}
                 </div>
                 <div className="text-center">
                    <h3 className="font-headline text-2xl font-bold">{user.displayName}</h3>
@@ -373,11 +437,11 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="space-y-4 pt-4 border-t border-outline/5">
+              <div className="space-y-4 pt-4 border-t border-[#1e1b13]/10">
                 <Button 
                   onClick={handleSignOut}
                   variant="outline" 
-                  className="w-full h-16 rounded-full border-2 border-error/20 text-error font-bold text-lg hover:bg-error/5"
+                  className="w-full h-16 rounded-full border-2 border-error text-error font-bold text-lg hover:bg-error/5"
                 >
                   <span className="material-symbols-outlined mr-2">logout</span> Sair do Aplicativo
                 </Button>
@@ -389,21 +453,21 @@ export default function Home() {
         {appState === 'AVISO' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center border-2 border-[#1e1b13] hover:bg-surface-container-highest transition-colors">
                  <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Horários</h2>
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white p-8 rounded-xl flex items-center justify-between border-l-8 border-primary soft-float border border-white">
+              <div className="bg-white p-8 rounded-xl flex items-center justify-between border-2 border-[#1e1b13] shadow-[4px_4px_0px_#1e1b13]">
                 <div>
-                  <span className="bg-primary text-white font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wider">Às 08:00</span>
+                  <span className="bg-primary text-white font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wider border-2 border-[#1e1b13]">Às 08:00</span>
                   <h4 className="text-2xl font-extrabold text-on-background mt-2">Remédio de Pressão</h4>
                   <p className="text-on-surface-variant font-bold">1 comprimido em jejum</p>
                 </div>
-                <div className="w-14 h-14 bg-surface-container rounded-full flex items-center justify-center pillow-shadow text-primary">
-                  <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>schedule</span>
+                <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center border-2 border-[#1e1b13]">
+                  <KawaiiAviso active />
                 </div>
               </div>
             </div>
@@ -448,67 +512,67 @@ export default function Home() {
       </main>
 
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/10 px-8 py-3 pb-8 flex justify-around items-center z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-xl border-t-2 border-[#1e1b13] px-4 py-3 pb-8 flex justify-around items-center z-50">
         <button 
           onClick={() => setAppState('INICIO')}
-          className="flex flex-col items-center gap-1 group transition-all"
+          className="flex flex-col items-center gap-1 group"
         >
-          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'INICIO' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'INICIO' ? "'FILL' 1" : "'FILL' 0" }}>home</span>
+          <div className={cn("px-4 py-1.5 rounded-full transition-all border-2 border-transparent", appState === 'INICIO' && "bg-primary-container border-[#1e1b13] shadow-[2px_2px_0px_#1e1b13]")}>
+            <KawaiiHome active={appState === 'INICIO'} />
           </div>
-          <span className="text-[10px] font-bold text-on-surface-variant">Início</span>
+          <span className={cn("text-[10px] font-bold", appState === 'INICIO' ? "text-primary" : "text-on-surface-variant")}>Início</span>
         </button>
 
         <button 
           onClick={() => handleStartCapture('MEDICINE')}
-          className="flex flex-col items-center gap-1 group transition-all"
+          className="flex flex-col items-center gap-1 group"
         >
-          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'CAPTURING' && appMode === 'MEDICINE' ? "'FILL' 1" : "'FILL' 0" }}>medication</span>
+          <div className={cn("px-4 py-1.5 rounded-full transition-all border-2 border-transparent", appState === 'CAPTURING' && appMode === 'MEDICINE' && "bg-primary-container border-[#1e1b13] shadow-[2px_2px_0px_#1e1b13]")}>
+            <KawaiiMedicine active={appState === 'CAPTURING' && appMode === 'MEDICINE'} />
           </div>
-          <span className="text-[10px] font-bold text-on-surface-variant">Remédios</span>
+          <span className={cn("text-[10px] font-bold", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "text-primary" : "text-on-surface-variant")}>Remédios</span>
         </button>
         
         <button 
           onClick={() => setAppState('RECEITAS')}
-          className="flex flex-col items-center gap-1 group transition-all"
+          className="flex flex-col items-center gap-1 group"
         >
-          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'RECEITAS' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'RECEITAS' ? "'FILL' 1" : "'FILL' 0" }}>description</span>
+          <div className={cn("px-4 py-1.5 rounded-full transition-all border-2 border-transparent", appState === 'RECEITAS' && "bg-primary-container border-[#1e1b13] shadow-[2px_2px_0px_#1e1b13]")}>
+            <KawaiiPrescription active={appState === 'RECEITAS'} />
           </div>
-          <span className="text-[10px] font-bold text-on-surface-variant">Receitas</span>
+          <span className={cn("text-[10px] font-bold", appState === 'RECEITAS' ? "text-primary" : "text-on-surface-variant")}>Receitas</span>
         </button>
 
         <button 
           onClick={() => setAppState('CONTA')}
-          className="flex flex-col items-center gap-1 group transition-all"
+          className="flex flex-col items-center gap-1 group"
         >
-          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'CONTA' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'CONTA' ? "'FILL' 1" : "'FILL' 0" }}>account_circle</span>
+          <div className={cn("px-4 py-1.5 rounded-full transition-all border-2 border-transparent", appState === 'CONTA' && "bg-primary-container border-[#1e1b13] shadow-[2px_2px_0px_#1e1b13]")}>
+            <KawaiiAccount active={appState === 'CONTA'} />
           </div>
-          <span className="text-[10px] font-bold text-on-surface-variant">Conta</span>
+          <span className={cn("text-[10px] font-bold", appState === 'CONTA' ? "text-primary" : "text-on-surface-variant")}>Conta</span>
         </button>
 
         <button 
           onClick={() => setAppState('AVISO')}
-          className="flex flex-col items-center gap-1 group transition-all"
+          className="flex flex-col items-center gap-1 group"
         >
-          <div className={cn("px-5 py-1 rounded-full transition-all relative", appState === 'AVISO' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'AVISO' ? "'FILL' 1" : "'FILL' 0" }}>notifications_active</span>
-            <div className="absolute top-1 right-4 w-2 h-2 bg-error rounded-full border border-white"></div>
+          <div className={cn("px-4 py-1.5 rounded-full transition-all border-2 border-transparent relative", appState === 'AVISO' && "bg-primary-container border-[#1e1b13] shadow-[2px_2px_0px_#1e1b13]")}>
+            <KawaiiAviso active={appState === 'AVISO'} />
+            <div className="absolute top-1 right-2 w-3 h-3 bg-error rounded-full border-2 border-[#1e1b13]"></div>
           </div>
-          <span className="text-[10px] font-bold text-on-surface-variant">Aviso</span>
+          <span className={cn("text-[10px] font-bold", appState === 'AVISO' ? "text-primary" : "text-on-surface-variant")}>Aviso</span>
         </button>
       </nav>
 
       {/* Emergency Dialog */}
       <Dialog open={showEmergencyDialog} onOpenChange={setShowEmergencyDialog}>
-        <DialogContent className="max-w-sm rounded-xl p-8 text-center space-y-6 bg-surface border-none shadow-2xl">
-          <div className="bg-error-container w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner">
-            <span className="material-symbols-outlined text-5xl text-error" style={{ fontVariationSettings: "'FILL' 1" }}>call</span>
+        <DialogContent className="max-w-sm rounded-xl p-8 text-center space-y-6 bg-surface border-4 border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13]">
+          <div className="bg-error-container w-24 h-24 rounded-full flex items-center justify-center mx-auto border-2 border-[#1e1b13]">
+            <KawaiiAviso active />
           </div>
           <DialogHeader>
-            <DialogTitle className="font-headline text-2xl font-extrabold text-error">Chamar o SAMU?</DialogTitle>
+            <DialogTitle className="font-headline text-2xl font-extrabold text-error uppercase">Chamar o SAMU?</DialogTitle>
             <DialogDescription className="text-lg font-bold mt-2 text-on-surface leading-tight">
               Vovó, a senhora precisa de ajuda urgente? 
               Vou ligar para o 192 agora mesmo.
@@ -516,7 +580,7 @@ export default function Home() {
           </DialogHeader>
           <DialogFooter className="flex flex-col gap-3 sm:flex-col">
             <Button 
-              className="h-16 w-full rounded-full bg-error text-white text-xl font-bold shadow-lg active:translate-y-1 transition-all"
+              className="h-16 w-full rounded-full bg-error text-white text-xl font-bold shadow-[4px_4px_0px_#1e1b13] border-2 border-[#1e1b13] active:translate-y-1 transition-all"
               onClick={() => {
                 window.location.href = 'tel:192';
                 setShowEmergencyDialog(false);
@@ -526,7 +590,7 @@ export default function Home() {
             </Button>
             <Button 
               variant="outline" 
-              className="h-12 w-full rounded-full border-2 border-outline/20 text-on-surface-variant font-bold"
+              className="h-12 w-full rounded-full border-2 border-[#1e1b13] text-on-surface-variant font-bold"
               onClick={() => setShowEmergencyDialog(false)}
             >
               Não, foi engano
