@@ -114,13 +114,23 @@ export default function Home() {
               {/* Opção de Ler Receita */}
               <div className="space-y-2 pt-4">
                 <p className="text-xl text-secondary font-bold">Ler uma Receita:</p>
-                <Button
-                  onClick={() => handleStartCapture('PRESCRIPTION')}
-                  className="w-full h-32 rounded-3xl flex flex-col items-center justify-center space-y-2 shadow-xl bg-secondary text-secondary-foreground"
-                >
-                  <FileText className="w-10 h-10" />
-                  <span className="text-xl font-bold">Tirar Foto da Receita</span>
-                </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={() => handleStartCapture('PRESCRIPTION')}
+                    className="h-32 rounded-3xl flex flex-col items-center justify-center space-y-2 shadow-lg bg-secondary text-white"
+                  >
+                    <Camera className="w-8 h-8" />
+                    <span className="text-lg">Tirar Foto</span>
+                  </Button>
+                  <Button
+                    onClick={() => handleFileClick('PRESCRIPTION')}
+                    variant="secondary"
+                    className="h-32 rounded-3xl flex flex-col items-center justify-center space-y-2 shadow-lg border-2 border-secondary/20"
+                  >
+                    <ImageIcon className="w-8 h-8 text-secondary" />
+                    <span className="text-lg text-secondary">Da Galeria</span>
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -139,7 +149,9 @@ export default function Home() {
         )}
 
         {appState === 'PROCESSING' && (
-          <LoadingState />
+          <LoadingState 
+            message={appMode === 'MEDICINE' ? "Estou lendo o remédio..." : "Estou lendo a receita..."} 
+          />
         )}
 
         {appState === 'RESULT' && (
