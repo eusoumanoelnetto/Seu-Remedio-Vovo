@@ -1,7 +1,8 @@
+
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, HelpCircle, ChevronRight, Bell, User, LogOut, Chrome, Loader2, Camera, MoreHorizontal } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Chrome, Loader2, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from '@/components/camera-capture';
 import { LoadingState } from '@/components/loading-state';
@@ -20,7 +21,7 @@ import { collection, doc, setDoc, serverTimestamp, query, orderBy } from 'fireba
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 type AppMode = 'MEDICINE' | 'PRESCRIPTION';
-type AppState = 'IDLE' | 'CAPTURING' | 'PROCESSING' | 'RESULT' | 'HISTORY' | 'SCHEDULE' | 'ACCOUNT';
+type AppState = 'INICIO' | 'CAPTURING' | 'PROCESSING' | 'RESULT' | 'RECEITAS' | 'AVISO' | 'CONTA';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
@@ -29,10 +30,9 @@ export default function Home() {
   const { toast } = useToast();
 
   const [appMode, setAppMode] = useState<AppMode>('MEDICINE');
-  const [appState, setAppState] = useState<AppState>('IDLE');
+  const [appState, setAppState] = useState<AppState>('INICIO');
   const [medicineResult, setMedicineResult] = useState<MedicineExplanationOutput | null>(null);
   const [prescriptionResult, setPrescriptionResult] = useState<ReadPrescriptionOutput | null>(null);
-  const [locationStatus, setLocationStatus] = useState<'IDLE' | 'GETTING' | 'SUCCESS' | 'ERROR'>('IDLE');
   const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -66,19 +66,11 @@ export default function Home() {
       
       toast({ title: "Bem-vinda, vovó!", description: `Que bom ter a senhora aqui, ${user.displayName}!` });
     } catch (error: any) {
-      if (error.code === 'auth/operation-not-allowed') {
-        toast({ 
-          variant: "destructive", 
-          title: "Vovó, precisamos de um ajuste!", 
-          description: "O login com Google ainda não foi ativado no painel de controle. Peça para alguém ativar o 'Google' em 'Authentication' no Console do Firebase." 
-        });
-      } else {
-        toast({ 
-          variant: "destructive", 
-          title: "Ih, deu um erro!", 
-          description: "Não conseguimos entrar com o Google agora. Tente novamente mais tarde." 
-        });
-      }
+      toast({ 
+        variant: "destructive", 
+        title: "Ih, deu um erro!", 
+        description: "Não conseguimos entrar com o Google agora. Peça para alguém ativar o 'Google' em 'Authentication' no Console do Firebase." 
+      });
     } finally {
       setIsLoggingIn(false);
     }
@@ -86,7 +78,7 @@ export default function Home() {
 
   const handleSignOut = async () => {
     await signOut(auth);
-    setAppState('IDLE');
+    setAppState('INICIO');
     toast({ title: "Até logo!", description: "Espero ver a senhora em breve, vovó!" });
   };
 
@@ -96,17 +88,12 @@ export default function Home() {
         resolve(undefined);
         return;
       }
-      setLocationStatus('GETTING');
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const loc = `Cidade Próxima (Lat: ${position.coords.latitude.toFixed(2)}, Long: ${position.coords.longitude.toFixed(2)})`;
-          setLocationStatus('SUCCESS');
           resolve(loc);
         },
-        (error) => {
-          setLocationStatus('ERROR');
-          resolve(undefined);
-        },
+        () => resolve(undefined),
         { timeout: 10000 }
       );
     });
@@ -154,12 +141,11 @@ export default function Home() {
         title: "Ih, vovó!",
         description: "Houve um probleminha ao ler a foto. Tente novamente!",
       });
-      setAppState('IDLE');
+      setAppState('INICIO');
     }
   };
 
-  const handleFileClick = (mode: AppMode) => {
-    setAppMode(mode);
+  const handleFileClick = () => {
     fileInputRef.current?.click();
   };
 
@@ -178,8 +164,7 @@ export default function Home() {
   const handleReset = () => {
     setMedicineResult(null);
     setPrescriptionResult(null);
-    setAppState('IDLE');
-    setLocationStatus('IDLE');
+    setAppState('INICIO');
   };
 
   const handleOpenHistoryItem = (item: any) => {
@@ -200,12 +185,12 @@ export default function Home() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 space-y-12 animate-fade-in">
-        <div className="w-32 h-32 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-xl animate-bounce">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 space-y-12 animate-fade-in selection:bg-primary-container">
+        <div className="w-32 h-32 organic-blob bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-xl animate-bounce">
           <span className="material-symbols-outlined text-7xl" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
         </div>
         <div className="text-center space-y-4 max-w-sm">
-          <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight leading-tight">MedGrandma AI</h1>
+          <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight leading-tight">Seu Remédio Vovó</h1>
           <p className="text-xl text-on-surface-variant font-medium">
             Seu assistente carinhoso para cuidar da saúde. Entre para salvar seus remédios!
           </p>
@@ -239,24 +224,25 @@ export default function Home() {
               <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>face_6</span>
             )}
           </div>
-          <h1 className="font-headline text-2xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
+          <h1 className="font-headline text-xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
-        <button onClick={() => setAppState('ACCOUNT')} className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors">
-          <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
+        <button onClick={() => setAppState('CONTA')} className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors">
+          <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 0" }}>account_circle</span>
         </button>
       </header>
 
-      <main className="flex-1 px-6 pt-8 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
+      <main className="flex-1 px-6 pt-4 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
         
-        {appState === 'IDLE' && (
+        {appState === 'INICIO' && (
           <>
-            <section className="space-y-4">
-              <div className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-sm font-semibold tracking-wider shadow-sm uppercase">
-                BEM-VINDA AO MEDGRANDMA
-              </div>
+            <section className="text-center space-y-2 py-6">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold text-xs uppercase tracking-widest">
+                ABRAÇO DE VOVÓ
+              </span>
               <h2 className="font-headline text-4xl leading-tight text-on-background font-extrabold tracking-tight">
-                Olá, Vovó! Como você está hoje?
+                Seu Remédio Vovó
               </h2>
+              <p className="text-on-surface-variant font-medium">Como posso te ajudar hoje, meu anjo?</p>
             </section>
 
             <section className="grid grid-cols-1 gap-6">
@@ -312,7 +298,7 @@ export default function Home() {
 
             {/* Next Med Card */}
             <div 
-              onClick={() => setAppState('SCHEDULE')}
+              onClick={() => setAppState('AVISO')}
               className="bg-surface-container-high rounded-full p-6 flex items-center justify-between ambient-float border border-white cursor-pointer active:scale-95 transition-all"
             >
               <div className="flex items-center gap-4">
@@ -335,10 +321,10 @@ export default function Home() {
           </>
         )}
 
-        {appState === 'HISTORY' && (
+        {appState === 'RECEITAS' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
                  <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minhas Receitas</h2>
@@ -373,17 +359,17 @@ export default function Home() {
                 <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed border-outline/10">
                   <span className="material-symbols-outlined text-6xl text-primary/20 mx-auto" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
                   <p className="text-xl text-muted-foreground font-bold">Sua caixinha de lembranças está vazia!</p>
-                  <Button onClick={() => setAppState('IDLE')} variant="outline" className="rounded-full px-8">Começar Agora</Button>
+                  <Button onClick={() => setAppState('INICIO')} variant="outline" className="rounded-full px-8">Começar Agora</Button>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {appState === 'ACCOUNT' && (
+        {appState === 'CONTA' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
                  <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minha Conta</h2>
@@ -413,10 +399,10 @@ export default function Home() {
           </div>
         )}
 
-        {appState === 'SCHEDULE' && (
+        {appState === 'AVISO' && (
           <div className="space-y-8 animate-fade-in">
             <div className="flex items-center gap-4">
-               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+               <button onClick={() => setAppState('INICIO')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
                  <span className="material-symbols-outlined text-primary text-2xl">arrow_back</span>
                </button>
                <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Horários</h2>
@@ -441,8 +427,8 @@ export default function Home() {
           <div className="fixed inset-0 z-[100] bg-black">
             <CameraCapture 
               onCapture={handlePhotoCaptured} 
-              onCancel={() => setAppState('IDLE')} 
-              onFileSelect={() => handleFileClick(appMode)}
+              onCancel={() => setAppState('INICIO')} 
+              onFileSelect={handleFileClick}
             />
           </div>
         )}
@@ -477,51 +463,51 @@ export default function Home() {
       {/* BottomNavBar */}
       <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/10 px-8 py-3 pb-8 flex justify-around items-center z-50">
         <button 
-          onClick={() => handleStartCapture('MEDICINE')}
+          onClick={() => setAppState('INICIO')}
           className="flex flex-col items-center gap-1 group transition-all"
         >
-          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>medication</span>
-          </div>
-          <span className="text-[10px] font-bold text-on-surface-variant">Remédios</span>
-        </button>
-        
-        <button 
-          onClick={() => setAppState('HISTORY')}
-          className="flex flex-col items-center gap-1 group transition-all"
-        >
-          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
-          </div>
-          <span className="text-[10px] font-bold text-on-surface-variant">Receitas</span>
-        </button>
-
-        <button 
-          onClick={() => setAppState('IDLE')}
-          className="flex flex-col items-center gap-1 group transition-all"
-        >
-          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'IDLE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>home</span>
+          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'INICIO' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'INICIO' ? "'FILL' 1" : "'FILL' 0" }}>home</span>
           </div>
           <span className="text-[10px] font-bold text-on-surface-variant">Início</span>
         </button>
 
         <button 
-          onClick={() => setAppState('ACCOUNT')}
+          onClick={() => handleStartCapture('MEDICINE')}
           className="flex flex-col items-center gap-1 group transition-all"
         >
-          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'ACCOUNT' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
+          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'CAPTURING' && appMode === 'MEDICINE' ? "'FILL' 1" : "'FILL' 0" }}>medication</span>
+          </div>
+          <span className="text-[10px] font-bold text-on-surface-variant">Remédios</span>
+        </button>
+        
+        <button 
+          onClick={() => setAppState('RECEITAS')}
+          className="flex flex-col items-center gap-1 group transition-all"
+        >
+          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'RECEITAS' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'RECEITAS' ? "'FILL' 1" : "'FILL' 0" }}>description</span>
+          </div>
+          <span className="text-[10px] font-bold text-on-surface-variant">Receitas</span>
+        </button>
+
+        <button 
+          onClick={() => setAppState('CONTA')}
+          className="flex flex-col items-center gap-1 group transition-all"
+        >
+          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'CONTA' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'CONTA' ? "'FILL' 1" : "'FILL' 0" }}>account_circle</span>
           </div>
           <span className="text-[10px] font-bold text-on-surface-variant">Conta</span>
         </button>
 
         <button 
-          onClick={() => setAppState('SCHEDULE')}
+          onClick={() => setAppState('AVISO')}
           className="flex flex-col items-center gap-1 group transition-all"
         >
-          <div className={cn("px-5 py-1 rounded-full transition-all relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>notifications_active</span>
+          <div className={cn("px-5 py-1 rounded-full transition-all relative", appState === 'AVISO' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: appState === 'AVISO' ? "'FILL' 1" : "'FILL' 0" }}>notifications_active</span>
             <div className="absolute top-1 right-4 w-2 h-2 bg-error rounded-full border border-white"></div>
           </div>
           <span className="text-[10px] font-bold text-on-surface-variant">Aviso</span>

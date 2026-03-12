@@ -1,11 +1,12 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'MedGrandma AI - Abraço de Vovó',
-  description: 'Seu assistente de saúde carinhoso',
+  title: 'Seu Remédio Vovó - Abraço de Cuidado',
+  description: 'Seu assistente de saúde carinhoso e elegante.',
 };
 
 export default function RootLayout({

@@ -5,34 +5,34 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Stores profile information for users of the Vovó Remédio Fácil app, allowing them to manage their saved medicine scans. This entity supports user accounts created directly or through external providers like Google.",
+      "description": "Armazena informações de perfil dos usuários do app Seu Remédio Vovó, permitindo gerenciar leituras de medicamentos e receitas.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the UserProfile entity."
+          "description": "Identificador único do perfil do usuário."
         },
         "email": {
           "type": "string",
-          "description": "The user's email address, typically retrieved from an external authentication provider like Google. Used for identification and communication.",
+          "description": "E-mail do usuário.",
           "format": "email"
         },
         "displayName": {
           "type": "string",
-          "description": "The user's preferred name or full name to be displayed within the application, often obtained from the authentication provider."
+          "description": "Nome de exibição do usuário."
         },
         "profileImageUrl": {
           "type": "string",
-          "description": "URL to the user's profile picture, if available from the authentication provider or uploaded by the user.",
+          "description": "URL da imagem de perfil.",
           "format": "uri"
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp indicating when this user profile was first created in the system.",
+          "description": "Data de criação.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp indicating the last time this user profile's information was updated.",
+          "description": "Data da última atualização.",
           "format": "date-time"
         }
       },
@@ -47,36 +47,36 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "MedicineScan",
       "type": "object",
-      "description": "Records each instance where a user utilizes the app to scan a medicine. It stores the details of the scan, including the captured image and the AI-generated explanation.",
+      "description": "Registra cada instância em que um usuário utiliza o app para escanear um remédio ou receita.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the MedicineScan entity."
+          "description": "Identificador único da leitura."
         },
         "userId": {
           "type": "string",
-          "description": "Reference to the UserProfile who performed this medicine scan. (Relationship: UserProfile 1:N MedicineScan)"
+          "description": "Referência ao usuário que realizou a leitura."
         },
         "scannedImageUrl": {
           "type": "string",
-          "description": "The URL where the image of the scanned medicine is stored.",
+          "description": "URL da imagem capturada.",
           "format": "uri"
         },
         "medicineName": {
           "type": "string",
-          "description": "The identified name of the medicine, if the AI tool successfully recognizes it."
+          "description": "Nome identificado do remédio."
         },
         "simplifiedExplanation": {
           "type": "string",
-          "description": "The AI-generated explanation of the medicine's purpose and usage, presented in simple, popular, and non-technical language."
+          "description": "Explicação simplificada gerada pela IA."
         },
         "rawAiResponse": {
           "type": "string",
-          "description": "An optional field to store the complete raw response from the AI tool for potential debugging, analysis, or future improvements."
+          "description": "Resposta bruta da IA (opcional)."
         },
         "scanDateTime": {
           "type": "string",
-          "description": "Timestamp indicating the exact date and time when the medicine was scanned by the user.",
+          "description": "Data e hora da leitura.",
           "format": "date-time"
         }
       },
@@ -105,11 +105,11 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores individual user profiles. The document ID (`{userId}`) corresponds to the authenticated user's unique ID (`request.auth.uid`). Access is restricted to the owner of the profile.",
+          "description": "Perfis de usuários individuais.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user, matching `request.auth.uid`."
+              "description": "O UID do usuário."
             }
           ]
         }
@@ -121,20 +121,20 @@
           "schema": {
             "$ref": "#/backend/entities/MedicineScan"
           },
-          "description": "Stores all medicine scans performed by a specific user. Access is restricted to the authenticated user matching `userId`.",
+          "description": "Histórico de leituras de medicamentos e receitas do usuário.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user who performed the scan, matching `request.auth.uid`."
+              "description": "UID do dono do histórico."
             },
             {
               "name": "scanId",
-              "description": "The unique identifier for a specific medicine scan."
+              "description": "ID único da leitura."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure for the 'Vovó Remédio Fácil' application is designed to prioritize security, scalability, and debuggability, adhering strictly to the provided core design principles and mandates."
+    "reasoning": "Estrutura centrada no usuário para garantir privacidade e facilidade de acesso ao histórico pessoal."
   }
 }
