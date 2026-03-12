@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, Trash2, HelpCircle, ChevronRight, Bell, Camera, User } from 'lucide-react';
+import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, Trash2, HelpCircle, ChevronRight, Bell, Camera, User, LogOut, Mail, Chrome } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from '@/components/camera-capture';
 import { LoadingState } from '@/components/loading-state';
@@ -14,53 +14,64 @@ import type { ReadPrescriptionOutput } from '@/ai/flows/read-prescription-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { collection, doc, setDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 type AppMode = 'MEDICINE' | 'PRESCRIPTION';
-type AppState = 'IDLE' | 'CAPTURING' | 'PROCESSING' | 'RESULT' | 'HISTORY' | 'SCHEDULE';
-
-interface HistoryItem {
-  id: string;
-  date: string;
-  type: AppMode;
-  title: string;
-  data: any;
-}
+type AppState = 'IDLE' | 'CAPTURING' | 'PROCESSING' | 'RESULT' | 'HISTORY' | 'SCHEDULE' | 'ACCOUNT';
 
 export default function Home() {
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const db = useFirestore();
+  const { toast } = useToast();
+
   const [appMode, setAppMode] = useState<AppMode>('MEDICINE');
   const [appState, setAppState] = useState<AppState>('IDLE');
   const [medicineResult, setMedicineResult] = useState<MedicineExplanationOutput | null>(null);
   const [prescriptionResult, setPrescriptionResult] = useState<ReadPrescriptionOutput | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [locationStatus, setLocationStatus] = useState<'IDLE' | 'GETTING' | 'SUCCESS' | 'ERROR'>('IDLE');
   const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
-  useEffect(() => {
-    const savedHistory = localStorage.getItem('vovo_history');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
+  // Firestore Data
+  const scansQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, 'users', user.uid, 'medicine_scans'),
+      orderBy('scanDateTime', 'desc')
+    );
+  }, [db, user]);
+
+  const { data: scansHistory, isLoading: isHistoryLoading } = useCollection(scansQuery);
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      // Initialize profile
+      await setDoc(doc(db, 'users', user.uid), {
+        id: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        profileImageUrl: user.photoURL,
+        updatedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+      toast({ title: "Bem-vinda, vovó!", description: `Que bom ter a senhora aqui, ${user.displayName}!` });
+    } catch (error) {
+      console.error(error);
+      toast({ variant: "destructive", title: "Erro ao entrar", description: "Não conseguimos entrar com o Google agora." });
     }
-  }, []);
-
-  const saveToHistory = (type: AppMode, title: string, data: any) => {
-    const newItem: HistoryItem = {
-      id: Date.now().toString(),
-      date: new Date().toLocaleString('pt-BR'),
-      type,
-      title,
-      data
-    };
-    const updatedHistory = [newItem, ...history].slice(0, 20);
-    setHistory(updatedHistory);
-    localStorage.setItem('vovo_history', JSON.stringify(updatedHistory));
   };
 
-  const clearHistory = () => {
-    setHistory([]);
-    localStorage.removeItem('vovo_history');
-    toast({ title: "Histórico limpo!", description: "Tudo limpinho como um brinco, vovó!" });
+  const handleSignOut = async () => {
+    await signOut(auth);
+    setAppState('IDLE');
+    toast({ title: "Até logo!", description: "Espero ver a senhora em breve, vovó!" });
   };
 
   const getUserLocation = (): Promise<string | undefined> => {
@@ -97,7 +108,17 @@ export default function Home() {
       if (appMode === 'MEDICINE') {
         const output = await explainMedicine({ photoDataUri });
         setMedicineResult(output);
-        saveToHistory('MEDICINE', output.medicineName, output);
+        
+        // Save to Firestore
+        if (user) {
+          addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicine_scans'), {
+            userId: user.uid,
+            scannedImageUrl: photoDataUri, // In production, upload to storage first
+            medicineName: output.medicineName,
+            simplifiedExplanation: output.simpleExplanation,
+            scanDateTime: new Date().toISOString(),
+          });
+        }
       } else {
         const userLocation = await getUserLocation();
         const output = await readPrescription({ 
@@ -105,7 +126,18 @@ export default function Home() {
           userLocation 
         });
         setPrescriptionResult(output);
-        saveToHistory('PRESCRIPTION', `Receita (${new Date().toLocaleDateString()})`, output);
+        
+        // Save to Firestore
+        if (user) {
+          addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicine_scans'), {
+            userId: user.uid,
+            scannedImageUrl: photoDataUri,
+            medicineName: `Receita identificada`,
+            simplifiedExplanation: `Receita com ${output.medicines.length} itens identificados.`,
+            scanDateTime: new Date().toISOString(),
+            rawAiResponse: JSON.stringify(output)
+          });
+        }
       }
       setAppState('RESULT');
     } catch (error) {
@@ -143,49 +175,91 @@ export default function Home() {
     setLocationStatus('IDLE');
   };
 
-  const handleOpenHistoryItem = (item: HistoryItem) => {
-    if (item.type === 'MEDICINE') {
-      setMedicineResult(item.data);
-      setPrescriptionResult(null);
-    } else {
-      setPrescriptionResult(item.data);
+  const handleOpenHistoryItem = (item: any) => {
+    if (item.rawAiResponse) {
+      setPrescriptionResult(JSON.parse(item.rawAiResponse));
       setMedicineResult(null);
+    } else {
+      setMedicineResult({
+        medicineName: item.medicineName,
+        simpleExplanation: item.simplifiedExplanation
+      });
+      setPrescriptionResult(null);
     }
     setAppState('RESULT');
   };
+
+  if (isUserLoading) return <LoadingState message="Preparando seu cantinho..." />;
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 space-y-12 animate-fade-in">
+        <div className="w-32 h-32 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-xl">
+          <Heart className="w-20 h-20 fill-on-secondary-container" />
+        </div>
+        <div className="text-center space-y-4 max-w-sm">
+          <h1 className="font-headline text-4xl font-extrabold text-primary">MedGrandma AI</h1>
+          <p className="text-xl text-on-surface-variant font-medium">
+            Seu assistente carinhoso para cuidar da saúde. Entre para salvar seus remédios!
+          </p>
+        </div>
+        <div className="w-full max-w-xs space-y-4">
+          <Button 
+            onClick={handleGoogleSignIn}
+            className="w-full h-16 rounded-full bg-white text-on-surface border-2 border-outline/20 flex items-center justify-center gap-3 text-lg font-bold shadow-md hover:bg-surface-variant transition-all"
+          >
+            <Chrome className="w-6 h-6 text-primary" />
+            Entrar com Google
+          </Button>
+          <div className="relative py-4">
+             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-outline/10"></div></div>
+             <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-muted-foreground">Ou</span></div>
+          </div>
+          <Button 
+            variant="ghost"
+            className="w-full h-16 rounded-full text-primary font-bold text-lg"
+          >
+            <Mail className="w-6 h-6 mr-2" /> Entrar com Email
+          </Button>
+        </div>
+        <p className="text-sm text-muted-foreground italic">"Um abraço de vovó em cada cuidado."</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background font-body text-on-background min-h-screen flex flex-col selection:bg-primary-container">
       {/* TopAppBar */}
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
-            <Heart className="w-8 h-8 fill-on-secondary-container" />
+          <div className="w-10 h-10 rounded-full bg-secondary-container overflow-hidden flex items-center justify-center">
+            {user.photoURL ? (
+              <img src={user.photoURL} alt="Vovó" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-6 h-6 text-on-secondary-container" />
+            )}
           </div>
-          <h1 className="font-headline text-2xl font-extrabold text-primary">Olá, Vovó!</h1>
+          <h1 className="font-headline text-xl font-extrabold text-primary">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
-        <button className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant">
-          <HelpCircle className="w-7 h-7" />
+        <button className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+          <HelpCircle className="w-6 h-6" />
         </button>
       </header>
 
-      <main className="flex-1 px-6 pt-8 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
+      <main className="flex-1 px-6 pt-4 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
         
         {appState === 'IDLE' && (
           <>
-            {/* Welcome Section */}
-            <section className="space-y-4">
-              <div className="inline-block px-4 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-sm font-semibold tracking-wider">
+            <section className="space-y-3">
+              <div className="inline-block px-4 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed text-xs font-bold tracking-widest uppercase">
                 BEM-VINDA AO MEDGRANDMA
               </div>
-              <h2 className="font-headline text-4xl leading-tight text-on-background font-extrabold">
-                Olá, Vovó! Como você está hoje?
+              <h2 className="font-headline text-4xl leading-tight text-on-background font-extrabold tracking-tight">
+                Como você está hoje?
               </h2>
             </section>
 
-            {/* Main Action Cards (Asymmetric Bento) */}
             <section className="grid grid-cols-1 gap-6">
-              {/* Action 1: Tirar Foto do Remédio */}
               <button 
                 onClick={() => handleStartCapture('MEDICINE')}
                 className="group relative w-full overflow-hidden bg-primary-container rounded-xl p-8 text-left transition-transform active:scale-[0.96] ambient-float"
@@ -195,15 +269,13 @@ export default function Home() {
                     <Pill className="w-12 h-12 text-primary fill-primary/10" />
                   </div>
                   <div>
-                    <h3 className="font-headline text-3xl text-on-primary-container mb-2">Tirar Foto do Remédio</h3>
-                    <p className="text-on-primary-container/80 text-lg leading-snug">Vou te ajudar a saber o que é e como tomar!</p>
+                    <h3 className="font-headline text-3xl text-on-primary-container mb-2 font-extrabold">Remédio</h3>
+                    <p className="text-on-primary-container/80 text-lg leading-snug font-medium">Vou te ajudar a saber o que é e como tomar!</p>
                   </div>
                 </div>
-                {/* Decorative element */}
                 <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/20 rounded-full blur-2xl"></div>
               </button>
 
-              {/* Action 2: Ler Receita Médica */}
               <button 
                 onClick={() => handleStartCapture('PRESCRIPTION')}
                 className="group relative w-full overflow-hidden bg-secondary-container rounded-xl p-8 text-left transition-transform active:scale-[0.96] ambient-float"
@@ -213,48 +285,31 @@ export default function Home() {
                     <FileText className="w-12 h-12 text-secondary fill-secondary/10" />
                   </div>
                   <div>
-                    <h3 className="font-headline text-3xl text-on-secondary-container mb-2">Ler Receita Médica</h3>
-                    <p className="text-on-secondary-container/80 text-lg leading-snug">Não entende a letra do médico? Eu leio para você!</p>
+                    <h3 className="font-headline text-3xl text-on-secondary-container mb-2 font-extrabold">Receita Médica</h3>
+                    <p className="text-on-secondary-container/80 text-lg leading-snug font-medium">Não entende a letra do médico? Eu leio para você!</p>
                   </div>
                 </div>
               </button>
             </section>
 
-            {/* Dica da Vovó Card */}
-            <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden">
+            <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden border border-white">
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="organic-blob w-24 h-24 bg-tertiary-container flex-shrink-0 flex items-center justify-center">
-                  <Sparkles className="w-12 h-12 text-on-tertiary-container" />
+                <div className="organic-blob w-20 h-20 bg-tertiary-container flex-shrink-0 flex items-center justify-center">
+                  <Sparkles className="w-10 h-10 text-on-tertiary-container" />
                 </div>
-                <div className="space-y-2">
-                  <h4 className="font-headline text-xl text-tertiary">Dica da Vovó</h4>
-                  <p className="text-on-surface text-xl leading-relaxed italic">
+                <div className="space-y-1">
+                  <h4 className="font-headline text-lg font-bold text-tertiary">Dica da Vovó</h4>
+                  <p className="text-on-surface text-lg leading-relaxed italic font-medium">
                     "Lembre-se de beber um copinho d'água agora, meu bem. Hidratação é saúde!"
                   </p>
                 </div>
               </div>
-              {/* Background Texture Simulation */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed opacity-20 rounded-full -mr-16 -mt-16"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed opacity-10 rounded-full -mr-16 -mt-16"></div>
             </section>
 
-            {/* Extra Feature Card: Quick Check */}
-            <div 
-              onClick={() => setAppState('SCHEDULE')}
-              className="bg-surface-container-high rounded-full p-6 flex items-center justify-between ambient-float cursor-pointer hover:bg-surface-container-highest transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center pillow-shadow">
-                  <Bell className="w-7 h-7 text-secondary fill-secondary/10" />
-                </div>
-                <span className="font-semibold text-lg text-on-surface">Seu próximo remédio é às 15:00</span>
-              </div>
-              <ChevronRight className="w-7 h-7 text-primary" />
-            </div>
-
-            {/* Emergency Button */}
             <Button
               onClick={() => setShowEmergencyDialog(true)}
-              className="h-20 rounded-xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full"
+              className="h-20 rounded-xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full border-b-4 border-black/10"
             >
               <PhoneCall className="w-8 h-8" />
               <span className="text-xl font-extrabold uppercase tracking-tight">Emergência (SAMU)</span>
@@ -268,42 +323,77 @@ export default function Home() {
                <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
                  <ArrowLeft className="w-7 h-7 text-primary" />
                </button>
-               <h2 className="font-headline text-3xl font-extrabold text-on-background">Meu Histórico</h2>
+               <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minhas Receitas</h2>
             </div>
             
             <div className="space-y-4">
-              {history.length === 0 ? (
-                <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed">
-                  <History className="w-16 h-16 text-primary/20 mx-auto" />
-                  <p className="text-xl text-muted-foreground font-medium">Sua caixinha de lembranças está vazia!</p>
-                </div>
-              ) : (
-                history.map((item) => (
+              {isHistoryLoading ? (
+                <div className="flex justify-center p-20"><LoadingState message="Lembrando..." /></div>
+              ) : scansHistory && scansHistory.length > 0 ? (
+                scansHistory.map((item) => (
                   <div 
                     key={item.id} 
                     onClick={() => handleOpenHistoryItem(item)}
                     className="bg-white rounded-xl p-6 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all soft-float border border-white"
                   >
                     <div className="flex items-center gap-5">
-                      <div className={`w-14 h-14 rounded-full flex items-center justify-center ${item.type === 'MEDICINE' ? 'bg-primary-container/20 text-primary' : 'bg-secondary-container/20 text-secondary'}`}>
-                        {item.type === 'MEDICINE' ? <Pill className="w-7 h-7" /> : <FileText className="w-7 h-7" />}
+                      <div className="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-primary">
+                        <FileText className="w-7 h-7" />
                       </div>
                       <div>
-                        <h4 className="font-headline font-bold text-xl text-on-background">{item.title}</h4>
-                        <p className="text-sm text-muted-foreground">{item.date}</p>
+                        <h4 className="font-headline font-bold text-xl text-on-background">{item.medicineName}</h4>
+                        <p className="text-sm text-muted-foreground">{new Date(item.scanDateTime).toLocaleString('pt-BR')}</p>
                       </div>
                     </div>
                     <ChevronRight className="w-6 h-6 text-primary/30" />
                   </div>
                 ))
+              ) : (
+                <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed">
+                  <History className="w-16 h-16 text-primary/20 mx-auto" />
+                  <p className="text-xl text-muted-foreground font-medium">Sua caixinha de lembranças está vazia!</p>
+                </div>
               )}
             </div>
+          </div>
+        )}
 
-            {history.length > 0 && (
-              <Button variant="ghost" onClick={clearHistory} className="w-full text-error font-bold text-lg h-14 rounded-xl">
-                <Trash2 className="w-5 h-5 mr-2" /> Limpar Histórico
-              </Button>
-            )}
+        {appState === 'ACCOUNT' && (
+          <div className="space-y-8 animate-fade-in">
+            <div className="flex items-center gap-4">
+               <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
+                 <ArrowLeft className="w-7 h-7 text-primary" />
+               </button>
+               <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Minha Conta</h2>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl space-y-8 soft-float border border-white">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-24 h-24 rounded-full bg-secondary-container overflow-hidden border-4 border-white shadow-lg">
+                   {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <User className="w-12 h-12" />}
+                </div>
+                <div className="text-center">
+                   <h3 className="font-headline text-2xl font-bold">{user.displayName}</h3>
+                   <p className="text-muted-foreground">{user.email}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-outline/5">
+                <Button 
+                  onClick={handleSignOut}
+                  variant="outline" 
+                  className="w-full h-16 rounded-full border-2 border-error/20 text-error font-bold text-lg hover:bg-error/5"
+                >
+                  <LogOut className="w-6 h-6 mr-2" /> Sair do Aplicativo
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-tertiary-container/20 p-6 rounded-xl text-center space-y-2 italic">
+               <p className="font-medium text-on-tertiary-container">
+                 "Seus dados estão protegidos aqui no meu caderninho digital, viu?"
+               </p>
+            </div>
           </div>
         )}
 
@@ -313,7 +403,7 @@ export default function Home() {
                <button onClick={() => setAppState('IDLE')} className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
                  <ArrowLeft className="w-7 h-7 text-primary" />
                </button>
-               <h2 className="font-headline text-3xl font-extrabold text-on-background">Horários</h2>
+               <h2 className="font-headline text-3xl font-extrabold text-on-background tracking-tight">Horários</h2>
             </div>
 
             <div className="bg-surface-container-low p-8 rounded-xl border-2 border-primary/10 shadow-sm italic">
@@ -388,37 +478,57 @@ export default function Home() {
       </main>
 
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-surface-container-highest/95 backdrop-blur-xl border-t border-outline-variant/15 px-6 pb-8 pt-4 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-surface-container-highest/95 backdrop-blur-xl border-t border-outline-variant/15 px-4 pb-8 pt-4 z-50">
         <div className="max-w-md mx-auto flex justify-between items-center">
           <button 
-            onClick={() => { handleReset(); setAppState('IDLE'); }}
+            onClick={() => handleStartCapture('MEDICINE')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", (appState === 'IDLE' || appState === 'RESULT') ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
-              <Pill className={cn("w-6 h-6", (appState === 'IDLE' || appState === 'RESULT') && "fill-on-primary-container")} />
+            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+              <Pill className="w-6 h-6" />
             </div>
-            <span className={cn("text-sm font-bold", (appState === 'IDLE' || appState === 'RESULT') ? "text-primary" : "text-on-surface-variant")}>Remédios</span>
+            <span className="text-[10px] font-bold text-on-surface-variant">Remédios</span>
           </button>
           
           <button 
             onClick={() => setAppState('HISTORY')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
               <FileText className="w-6 h-6" />
             </div>
-            <span className={cn("text-sm font-bold", appState === 'HISTORY' ? "text-primary" : "text-on-surface-variant")}>Receitas</span>
+            <span className="text-[10px] font-bold text-on-surface-variant">Receitas</span>
+          </button>
+
+          <button 
+            onClick={() => setAppState('IDLE')}
+            className="flex flex-col items-center gap-1 group transition-all"
+          >
+            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'IDLE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+              <Heart className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] font-bold text-on-surface-variant">Início</span>
+          </button>
+
+          <button 
+            onClick={() => setAppState('ACCOUNT')}
+            className="flex flex-col items-center gap-1 group transition-all"
+          >
+            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all", appState === 'ACCOUNT' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+              <User className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] font-bold text-on-surface-variant">Conta</span>
           </button>
 
           <button 
             onClick={() => setAppState('SCHEDULE')}
             className="flex flex-col items-center gap-1 group transition-all"
           >
-            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
+            <div className={cn("w-14 h-10 rounded-full flex items-center justify-center transition-all relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-variant text-on-surface-variant")}>
               <Bell className="w-6 h-6" />
-              <div className="absolute top-1 right-5 w-2 h-2 bg-error rounded-full border-2 border-white"></div>
+              <div className="absolute top-1 right-3 w-2 h-2 bg-error rounded-full border-2 border-white"></div>
             </div>
-            <span className={cn("text-sm font-bold", appState === 'SCHEDULE' ? "text-primary" : "text-on-surface-variant")}>Aviso</span>
+            <span className="text-[10px] font-bold text-on-surface-variant">Aviso</span>
           </button>
         </div>
       </nav>
