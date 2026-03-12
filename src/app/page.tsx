@@ -1,7 +1,8 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, Trash2, HelpCircle, ChevronRight, Bell } from 'lucide-react';
+import { Pill, FileText, Sparkles, MapPin, Heart, ArrowLeft, History, Clock, PhoneCall, AlertCircle, Trash2, HelpCircle, ChevronRight, Bell, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CameraCapture } from '@/components/camera-capture';
 import { LoadingState } from '@/components/loading-state';
@@ -156,13 +157,13 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-background font-body text-on-background min-h-screen flex flex-col">
+    <div className="bg-background font-body text-on-background min-h-screen flex flex-col selection:bg-primary-container">
       {/* TopAppBar */}
-      <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b border-outline-variant/10">
+      <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
-              <Image src="https://picsum.photos/seed/granny/100/100" alt="Vovó" width={40} height={40} className="object-cover" />
+            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center bg-secondary-container">
+               <Heart className="w-6 h-6 text-on-secondary-container fill-on-secondary-container" />
             </div>
           </div>
           <h1 className="font-headline font-extrabold text-xl tracking-tight text-primary">Olá, Vovó!</h1>
@@ -177,41 +178,41 @@ export default function Home() {
         {appState === 'IDLE' && (
           <>
             {/* Hero Section */}
-            <header className="text-center space-y-3 py-6">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold text-xs uppercase tracking-widest">
-                Inteligência da Vovó
-              </span>
-              <h2 className="font-headline font-extrabold text-4xl text-on-background tracking-tight">Abraço de Vovó</h2>
-              <p className="text-on-surface-variant font-medium">Como você está hoje? Vamos cuidar da saúde?</p>
+            <header className="space-y-4">
+              <div className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold text-xs uppercase tracking-widest">
+                BEM-VINDA AO MEDGRANDMA
+              </div>
+              <h2 className="font-headline font-extrabold text-4xl text-on-background tracking-tight leading-tight">
+                Olá, Vovó! Como você está hoje?
+              </h2>
             </header>
 
-            {/* Main Action Cards */}
+            {/* Main Action Cards (Exact Image Style) */}
             <section className="grid grid-cols-1 gap-6">
-              {/* Action 1: Tirar Foto */}
+              {/* Action 1: Tirar Foto do Remédio (Blue/Lavender Card) */}
               <button 
                 onClick={() => handleStartCapture('MEDICINE')}
-                className="group relative w-full overflow-hidden bg-primary-container rounded-xl p-8 text-left transition-all active:scale-[0.98] soft-float border border-white/40"
+                className="group relative w-full overflow-hidden bg-[#a7c7e7] rounded-[3rem] p-8 text-left transition-all active:scale-[0.98] soft-float border border-white/20"
               >
-                <div className="flex flex-col h-full justify-between gap-6">
-                  <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
-                    <Pill className="w-10 h-10 text-primary" />
+                <div className="flex flex-col h-full justify-between gap-8">
+                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center pillow-shadow">
+                    <Pill className="w-10 h-10 text-primary fill-primary/10" />
                   </div>
                   <div>
-                    <h3 className="font-headline font-extrabold text-3xl text-on-primary-container mb-2">Ver Remédio</h3>
+                    <h3 className="font-headline font-extrabold text-3xl text-on-primary-container mb-2">Tirar Foto do Remédio</h3>
                     <p className="text-on-primary-container/80 text-lg leading-snug">Vou te ajudar a saber o que é e como tomar!</p>
                   </div>
                 </div>
-                <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
               </button>
 
-              {/* Action 2: Ler Receita */}
+              {/* Action 2: Ler Receita Médica (Mint Card) */}
               <button 
                 onClick={() => handleStartCapture('PRESCRIPTION')}
-                className="group relative w-full overflow-hidden bg-secondary-container rounded-xl p-8 text-left transition-all active:scale-[0.98] soft-float border border-white/40"
+                className="group relative w-full overflow-hidden bg-[#c6e7d6] rounded-[3rem] p-8 text-left transition-all active:scale-[0.98] soft-float border border-white/20"
               >
-                <div className="flex flex-col h-full justify-between gap-6">
-                  <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
-                    <FileText className="w-10 h-10 text-secondary" />
+                <div className="flex flex-col h-full justify-between gap-8">
+                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center pillow-shadow">
+                    <FileText className="w-10 h-10 text-secondary fill-secondary/10" />
                   </div>
                   <div>
                     <h3 className="font-headline font-extrabold text-3xl text-on-secondary-container mb-2">Ler Receita Médica</h3>
@@ -221,40 +222,41 @@ export default function Home() {
               </button>
             </section>
 
-            {/* Dica da Vovó Card */}
-            <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden border border-white/40 shadow-sm">
-              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
-                <div className="organic-blob-1 w-24 h-24 bg-tertiary-container flex-shrink-0 flex items-center justify-center shadow-inner">
-                  <Sparkles className="w-10 h-10 text-on-tertiary-container" />
+            {/* Dica da Vovó Section */}
+            <section className="bg-surface-container-low rounded-[3rem] p-8 relative overflow-hidden border border-white/40 shadow-sm">
+              <div className="relative z-10 flex flex-col items-start gap-6">
+                <div className="organic-blob-1 w-20 h-20 bg-tertiary-container flex items-center justify-center shadow-inner">
+                  <Sparkles className="w-8 h-8 text-on-tertiary-container" />
                 </div>
                 <div className="space-y-2">
                   <h4 className="font-headline font-bold text-xl text-tertiary">Dica da Vovó</h4>
-                  <p className="text-on-surface text-xl leading-relaxed italic">
+                  <p className="text-on-surface text-lg leading-relaxed italic">
                     "Lembre-se de beber um copinho d'água agora, meu bem. Hidratação é saúde!"
                   </p>
                 </div>
               </div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed opacity-20 rounded-full -mr-16 -mt-16"></div>
+              {/* Background Blob decoration */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-tertiary-fixed opacity-10 rounded-full -mr-16 -mt-16"></div>
             </section>
 
             {/* Próximo Remédio bar */}
             <div 
               onClick={() => setAppState('SCHEDULE')}
-              className="bg-surface-container-high rounded-full p-6 flex items-center justify-between soft-float cursor-pointer hover:bg-surface-container-highest transition-colors border border-white/40"
+              className="bg-surface-container-high rounded-full p-5 flex items-center justify-between ambient-float cursor-pointer hover:bg-surface-container-highest transition-colors border border-white/40"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center pillow-shadow">
                   <Bell className="w-6 h-6 text-primary" />
                 </div>
-                <span className="font-bold text-lg text-on-surface">Próximo remédio: <span className="text-primary underline">15:00</span></span>
+                <span className="font-bold text-lg text-on-surface">Seu próximo remédio é às <span className="text-primary underline">15:00</span></span>
               </div>
               <ChevronRight className="w-6 h-6 text-primary" />
             </div>
 
-            {/* Emergência Button */}
+            {/* Emergency Button */}
             <Button
               onClick={() => setShowEmergencyDialog(true)}
-              className="h-20 rounded-xl bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full"
+              className="h-20 rounded-[2rem] bg-error hover:bg-red-700 text-white flex items-center justify-center gap-4 shadow-xl w-full"
             >
               <PhoneCall className="w-8 h-8" />
               <span className="text-xl font-extrabold uppercase tracking-tight">Emergência (SAMU)</span>
@@ -273,7 +275,7 @@ export default function Home() {
             
             <div className="space-y-4">
               {history.length === 0 ? (
-                <div className="bg-surface-container-low rounded-xl p-12 text-center space-y-4 border-2 border-dashed">
+                <div className="bg-surface-container-low rounded-[3rem] p-12 text-center space-y-4 border-2 border-dashed">
                   <History className="w-16 h-16 text-primary/20 mx-auto" />
                   <p className="text-xl text-muted-foreground font-medium">Sua caixinha de lembranças está vazia!</p>
                 </div>
@@ -282,7 +284,7 @@ export default function Home() {
                   <div 
                     key={item.id} 
                     onClick={() => handleOpenHistoryItem(item)}
-                    className="bg-white rounded-lg p-5 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all soft-float border border-white"
+                    className="bg-white rounded-[2rem] p-6 flex items-center justify-between cursor-pointer hover:bg-primary-container/10 transition-all soft-float border border-white"
                   >
                     <div className="flex items-center gap-5">
                       <div className={`w-14 h-14 rounded-full flex items-center justify-center ${item.type === 'MEDICINE' ? 'bg-primary-container/20 text-primary' : 'bg-secondary-container/20 text-secondary'}`}>
@@ -316,7 +318,7 @@ export default function Home() {
                <h2 className="font-headline text-3xl font-extrabold text-on-background">Horários</h2>
             </div>
 
-            <div className="bg-surface-container-low p-6 rounded-xl border-2 border-primary/10 shadow-sm italic">
+            <div className="bg-surface-container-low p-8 rounded-[3rem] border-2 border-primary/10 shadow-sm italic">
               <div className="flex items-start gap-4">
                 <AlertCircle className="w-6 h-6 text-primary shrink-0 mt-1" />
                 <p className="text-on-background text-lg font-medium leading-relaxed">
@@ -326,7 +328,7 @@ export default function Home() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white p-6 rounded-xl flex items-center justify-between border-l-8 border-primary soft-float">
+              <div className="bg-white p-8 rounded-[2.5rem] flex items-center justify-between border-l-8 border-primary soft-float">
                 <div>
                   <span className="bg-primary text-white font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wider">Às 08:00</span>
                   <h4 className="text-2xl font-extrabold text-on-background mt-2">Remédio de Pressão</h4>
@@ -387,14 +389,14 @@ export default function Home() {
         )}
       </main>
 
-      {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/10 px-8 py-3 pb-8 flex justify-around items-center z-50">
+      {/* BottomNavBar (Exact Image Style) */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/15 px-8 py-3 pb-8 flex justify-around items-center z-50">
         <button 
-          onClick={() => setAppState('IDLE')}
-          className={cn("flex flex-col items-center gap-1 group transition-all", appState === 'IDLE' ? "text-primary" : "text-on-surface-variant")}
+          onClick={() => { handleReset(); setAppState('IDLE'); }}
+          className={cn("flex flex-col items-center gap-1 group transition-all", (appState === 'IDLE' || appState === 'RESULT') ? "text-primary" : "text-on-surface-variant")}
         >
-          <div className={cn("px-5 py-1 rounded-full transition-colors", appState === 'IDLE' ? "bg-primary-container text-on-primary-container" : "group-hover:bg-surface-container")}>
-            <Pill className={cn("w-6 h-6", appState === 'IDLE' && "fill-primary")} />
+          <div className={cn("px-5 py-1 rounded-full transition-colors", (appState === 'IDLE' || appState === 'RESULT') ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-container")}>
+            <Pill className={cn("w-6 h-6", (appState === 'IDLE' || appState === 'RESULT') && "fill-primary")} />
           </div>
           <span className="text-[10px] font-bold">Remédios</span>
         </button>
@@ -403,7 +405,7 @@ export default function Home() {
           onClick={() => setAppState('HISTORY')}
           className={cn("flex flex-col items-center gap-1 group transition-all", appState === 'HISTORY' ? "text-primary" : "text-on-surface-variant")}
         >
-          <div className={cn("px-5 py-1 rounded-full transition-colors", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container" : "group-hover:bg-surface-container")}>
+          <div className={cn("px-5 py-1 rounded-full transition-colors", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-container")}>
             <FileText className="w-6 h-6" />
           </div>
           <span className="text-[10px] font-bold">Receitas</span>
@@ -413,7 +415,7 @@ export default function Home() {
           onClick={() => setAppState('SCHEDULE')}
           className={cn("flex flex-col items-center gap-1 group transition-all", appState === 'SCHEDULE' ? "text-primary" : "text-on-surface-variant")}
         >
-          <div className={cn("px-5 py-1 rounded-full transition-colors relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container" : "group-hover:bg-surface-container")}>
+          <div className={cn("px-5 py-1 rounded-full transition-colors relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container" : "hover:bg-surface-container")}>
             <Bell className="w-6 h-6" />
             <div className="absolute top-1 right-3 w-2 h-2 bg-error rounded-full border-2 border-white"></div>
           </div>
@@ -423,7 +425,7 @@ export default function Home() {
 
       {/* Emergency Dialog */}
       <Dialog open={showEmergencyDialog} onOpenChange={setShowEmergencyDialog}>
-        <DialogContent className="max-w-sm rounded-xl p-8 text-center space-y-6 bg-surface border-none shadow-2xl">
+        <DialogContent className="max-w-sm rounded-[2rem] p-8 text-center space-y-6 bg-surface border-none shadow-2xl">
           <div className="bg-error-container w-24 h-24 rounded-full flex items-center justify-center mx-auto shadow-inner">
             <PhoneCall className="w-12 h-12 text-error" />
           </div>
