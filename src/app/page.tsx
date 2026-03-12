@@ -237,13 +237,13 @@ export default function Home() {
             {user.photoURL ? (
               <img src={user.photoURL} alt="Vovó" className="w-full h-full object-cover" />
             ) : (
-              <User className="w-7 h-7" />
+              <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>face_6</span>
             )}
           </div>
           <h1 className="font-headline text-2xl font-extrabold text-primary tracking-tight">Olá, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
         <button onClick={() => setAppState('ACCOUNT')} className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest transition-colors">
-          <HelpCircle className="w-6 h-6" />
+          <span className="material-symbols-outlined text-2xl">help_outline</span>
         </button>
       </header>
 
@@ -268,7 +268,7 @@ export default function Home() {
               >
                 <div className="flex flex-col h-full justify-between gap-6">
                   <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
-                    <Pill className="w-12 h-12 text-primary" />
+                    <span className="material-symbols-outlined text-primary text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>medication</span>
                   </div>
                   <div>
                     <h3 className="font-headline text-3xl text-on-primary-container mb-2 font-extrabold">Tirar Foto do Remédio</h3>
@@ -285,7 +285,7 @@ export default function Home() {
               >
                 <div className="flex flex-col h-full justify-between gap-6">
                   <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow">
-                    <FileText className="w-12 h-12 text-secondary" />
+                    <span className="material-symbols-outlined text-secondary text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
                   </div>
                   <div>
                     <h3 className="font-headline text-3xl text-on-secondary-container mb-2 font-extrabold">Ler Receita Médica</h3>
@@ -299,7 +299,7 @@ export default function Home() {
             <section className="bg-surface-container-low rounded-xl p-8 relative overflow-hidden border border-white shadow-sm">
               <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="organic-blob w-24 h-24 bg-tertiary-container flex-shrink-0 flex items-center justify-center shadow-md">
-                  <Sparkles className="w-12 h-12 text-on-tertiary-container" />
+                  <span className="material-symbols-outlined text-on-tertiary-container text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
                 </div>
                 <div className="space-y-2">
                   <h4 className="font-headline text-xl font-bold text-tertiary">Dica da Vovó</h4>
@@ -318,11 +318,11 @@ export default function Home() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center pillow-shadow">
-                  <Bell className="w-6 h-6 text-secondary" />
+                  <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>notifications_active</span>
                 </div>
                 <span className="font-bold text-lg text-on-surface">Seu próximo remédio é às 15:00</span>
               </div>
-              <ChevronRight className="w-6 h-6 text-primary" />
+              <span className="material-symbols-outlined text-primary">chevron_right</span>
             </div>
 
             {/* Emergency Button */}
@@ -393,7 +393,7 @@ export default function Home() {
             <div className="bg-white p-8 rounded-xl space-y-8 soft-float border border-white">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-24 h-24 rounded-full bg-secondary-container overflow-hidden border-4 border-white shadow-lg">
-                   {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <User className="w-12 h-12" />}
+                   {user.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-5xl">face_6</span>}
                 </div>
                 <div className="text-center">
                    <h3 className="font-headline text-2xl font-bold">{user.displayName}</h3>
@@ -476,59 +476,57 @@ export default function Home() {
       </main>
 
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-surface-container-highest/95 backdrop-blur-xl border-t border-outline-variant/15 px-6 pb-8 pt-4 z-50">
-        <div className="max-w-md mx-auto flex justify-between items-center">
-          <button 
-            onClick={() => handleStartCapture('MEDICINE')}
-            className="flex flex-col items-center gap-1 group transition-all"
-          >
-            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
-              <Pill className="w-6 h-6" />
-            </div>
-            <span className="text-[10px] font-bold text-on-surface-variant">Remédios</span>
-          </button>
-          
-          <button 
-            onClick={() => setAppState('HISTORY')}
-            className="flex flex-col items-center gap-1 group transition-all"
-          >
-            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
-              <FileText className="w-6 h-6" />
-            </div>
-            <span className="text-[10px] font-bold text-on-surface-variant">Receitas</span>
-          </button>
+      <nav className="fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/10 px-8 py-3 pb-8 flex justify-around items-center z-50">
+        <button 
+          onClick={() => handleStartCapture('MEDICINE')}
+          className="flex flex-col items-center gap-1 group transition-all"
+        >
+          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'CAPTURING' && appMode === 'MEDICINE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>medication</span>
+          </div>
+          <span className="text-[10px] font-bold text-on-surface-variant">Remédios</span>
+        </button>
+        
+        <button 
+          onClick={() => setAppState('HISTORY')}
+          className="flex flex-col items-center gap-1 group transition-all"
+        >
+          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'HISTORY' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>description</span>
+          </div>
+          <span className="text-[10px] font-bold text-on-surface-variant">Receitas</span>
+        </button>
 
-          <button 
-            onClick={() => setAppState('IDLE')}
-            className="flex flex-col items-center gap-1 group transition-all"
-          >
-            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'IDLE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
-              <Heart className="w-6 h-6 fill-current" />
-            </div>
-            <span className="text-[10px] font-bold text-on-surface-variant">Início</span>
-          </button>
+        <button 
+          onClick={() => setAppState('IDLE')}
+          className="flex flex-col items-center gap-1 group transition-all"
+        >
+          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'IDLE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>home</span>
+          </div>
+          <span className="text-[10px] font-bold text-on-surface-variant">Início</span>
+        </button>
 
-          <button 
-            onClick={() => setAppState('ACCOUNT')}
-            className="flex flex-col items-center gap-1 group transition-all"
-          >
-            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'ACCOUNT' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
-              <User className="w-6 h-6" />
-            </div>
-            <span className="text-[10px] font-bold text-on-surface-variant">Conta</span>
-          </button>
+        <button 
+          onClick={() => setAppState('ACCOUNT')}
+          className="flex flex-col items-center gap-1 group transition-all"
+        >
+          <div className={cn("px-5 py-1 rounded-full transition-all", appState === 'ACCOUNT' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span>
+          </div>
+          <span className="text-[10px] font-bold text-on-surface-variant">Conta</span>
+        </button>
 
-          <button 
-            onClick={() => setAppState('SCHEDULE')}
-            className="flex flex-col items-center gap-1 group transition-all"
-          >
-            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-variant text-on-surface-variant")}>
-              <Bell className="w-6 h-6" />
-              <div className="absolute top-1 right-4 w-2 h-2 bg-error rounded-full border border-white"></div>
-            </div>
-            <span className="text-[10px] font-bold text-on-surface-variant">Aviso</span>
-          </button>
-        </div>
+        <button 
+          onClick={() => setAppState('SCHEDULE')}
+          className="flex flex-col items-center gap-1 group transition-all"
+        >
+          <div className={cn("px-5 py-1 rounded-full transition-all relative", appState === 'SCHEDULE' ? "bg-primary-container text-on-primary-container shadow-sm" : "hover:bg-surface-container text-on-surface-variant")}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>notifications_active</span>
+            <div className="absolute top-1 right-4 w-2 h-2 bg-error rounded-full border border-white"></div>
+          </div>
+          <span className="text-[10px] font-bold text-on-surface-variant">Aviso</span>
+        </button>
       </nav>
 
       {/* Emergency Dialog */}

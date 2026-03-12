@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState } from 'react';
@@ -86,19 +87,15 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           </p>
         </div>
 
-        {/* Fake Map */}
+        {/* Fake Map View */}
         <div className="relative h-48 rounded-xl overflow-hidden soft-float pillow-shadow">
           <Image 
-            src="https://picsum.photos/seed/map/800/400" 
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqnu1HdJFdIMAFd95sKXlALvVcj4djPg2dFlVhRYrsiXRJSkURQh8L38nI2T8UyZqzZzgPm1vKOToYtAk0bM4_oE3JJP7TCd_pGhrgcBJC65-uwPC6pAR4ogfteB4VuSxAq43yB5N_8F0CAkzDGAQmnaecVmjRJpLeFvAoVcgYhMlz2KBGcAMpXGDusXq2Tw-4P5yRo44Hd3Jgc83RGre3ILUyIgA4fRgFts4H6b28ABU228p0loj6CVS-mHsznuvMkrbShGb5PEQ" 
             alt="Mapa" 
             fill 
             className="object-cover opacity-80"
-            data-ai-hint="minimalist map"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
-          <div className="absolute inset-0 flex items-center justify-center">
-             <div className="w-8 h-8 bg-primary rounded-full border-4 border-white shadow-xl animate-bounce" />
-          </div>
         </div>
 
         {/* Pharmacy List */}
@@ -106,7 +103,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           {data.pharmacies.map((pharm, i) => (
             <div key={i} className="flex items-center gap-4 bg-surface-container p-4 rounded-lg border border-white/20 soft-float">
               <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                <Heart className={`w-8 h-8 ${i === 0 ? 'text-primary' : i === 1 ? 'text-tertiary' : 'text-secondary'}`} />
+                <span className="material-symbols-outlined text-primary text-3xl">local_pharmacy</span>
               </div>
               <div className="flex-grow">
                 <h4 className="font-bold text-on-surface text-lg">{pharm.name}</h4>
