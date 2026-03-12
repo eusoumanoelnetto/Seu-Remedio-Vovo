@@ -23,7 +23,7 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 type AppMode = 'MEDICINE' | 'PRESCRIPTION';
 type AppState = 'INICIO' | 'CAPTURING' | 'PROCESSING' | 'RESULT' | 'RECEITAS' | 'REMEDIOS' | 'AVISO' | 'CONTA';
 
-// Ícones Fofos (Kawaii Style) com contornos e carinhas
+// Ícones Kawaii com contorno e carinhas
 const KawaiiHome = ({ active }: { active?: boolean }) => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-all">
     <path d="M4 14L16 4L28 14V26C28 27.1046 27.1046 28 26 28H6C4.89543 28 4 27.1046 4 26V14Z" fill={active ? "#a7c7e7" : "#f5edde"} stroke="#1e1b13" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -218,7 +218,7 @@ export default function Home() {
           <KawaiiHome active />
         </div>
         <div className="text-center space-y-4 max-w-sm">
-          <h1 className="font-headline text-4xl font-extrabold text-primary">Seu Remédio Vovó</h1>
+          <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight">Seu Remédio Vovó</h1>
           <p className="text-xl text-on-surface-variant font-medium">Um abraço de cuidado em cada remédio.</p>
         </div>
         <Button 
@@ -236,7 +236,7 @@ export default function Home() {
   return (
     <div className="bg-background font-body text-on-background min-h-screen flex flex-col selection:bg-primary-container">
       {/* TopAppBar */}
-      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b-[2px] border-[#1e1b13]/5">
+      <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-xl px-6 py-4 flex items-center justify-between border-b-[3px] border-[#1e1b13]/10">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setAppState('CONTA')}
@@ -248,64 +248,82 @@ export default function Home() {
               <KawaiiAccount active />
             )}
           </button>
-          <h1 className="font-headline text-xl font-extrabold text-primary tracking-tight">Oi, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
+          <h1 className="font-headline text-2xl font-extrabold text-primary tracking-tight">Oi, {user.displayName?.split(' ')[0] || 'Vovó'}!</h1>
         </div>
-        <button className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center border-[2px] border-[#1e1b13]">
-          <span className="material-symbols-outlined text-xl">help_outline</span>
+        <button className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center border-[2px] border-[#1e1b13]">
+          <span className="material-symbols-outlined text-2xl">help_outline</span>
         </button>
       </header>
 
-      <main className="flex-1 px-6 pt-4 pb-32 space-y-8 max-w-2xl mx-auto w-full animate-fade-in">
+      <main className="flex-1 px-6 pt-8 pb-32 space-y-10 max-w-2xl mx-auto w-full animate-fade-in">
         
         {appState === 'INICIO' && (
           <>
-            <section className="text-center space-y-2 py-4">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold text-xs border-[2px] border-[#1e1b13] uppercase">ABRAÇO DE VOVÓ</span>
-              <h2 className="font-headline text-3xl font-extrabold tracking-tight">O que vamos ler hoje?</h2>
+            <section className="space-y-4">
+              <div className="inline-block px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-bold text-sm tracking-wider border-[2px] border-[#1e1b13]">
+                BEM-VINDA AO SEU REMÉDIO VOVÓ
+              </div>
+              <h2 className="font-headline text-4xl leading-tight text-on-background font-extrabold">
+                Olá, Vovó! Como você está hoje?
+              </h2>
             </section>
 
             <section className="grid grid-cols-1 gap-6">
               <button 
                 onClick={() => handleStartCapture('MEDICINE')}
-                className="relative w-full overflow-hidden bg-primary-container rounded-xl p-8 text-left border-[3px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13] active:translate-y-1 active:shadow-[4px_4px_0px_#1e1b13] transition-all"
+                className="group relative w-full overflow-hidden bg-primary-container rounded-xl p-8 text-left border-[3px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13] active:translate-y-1 active:shadow-[4px_4px_0px_#1e1b13] transition-all"
               >
-                <div className="flex flex-col h-full gap-6">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center pillow-shadow border-[2px] border-[#1e1b13]">
+                <div className="flex flex-col h-full justify-between gap-6">
+                  <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow border-[2px] border-[#1e1b13]">
                     <KawaiiMedicine active />
                   </div>
                   <div>
-                    <h3 className="font-headline text-2xl text-on-primary-container font-extrabold">Tirar Foto do Remédio</h3>
-                    <p className="text-on-primary-container/80 font-medium">Vou te explicar o que é esse remédio.</p>
+                    <h3 className="font-headline text-3xl text-on-primary-container mb-2 font-extrabold">Tirar Foto do Remédio</h3>
+                    <p className="text-on-primary-container/80 text-lg leading-snug font-medium">Vou te ajudar a saber o que é e como tomar!</p>
                   </div>
                 </div>
               </button>
 
               <button 
                 onClick={() => handleStartCapture('PRESCRIPTION')}
-                className="relative w-full overflow-hidden bg-secondary-container rounded-xl p-8 text-left border-[3px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13] active:translate-y-1 active:shadow-[4px_4px_0px_#1e1b13] transition-all"
+                className="group relative w-full overflow-hidden bg-secondary-container rounded-xl p-8 text-left border-[3px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13] active:translate-y-1 active:shadow-[4px_4px_0px_#1e1b13] transition-all"
               >
-                <div className="flex flex-col h-full gap-6">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center pillow-shadow border-[2px] border-[#1e1b13]">
+                <div className="flex flex-col h-full justify-between gap-6">
+                  <div className="w-20 h-20 bg-surface-container-lowest rounded-full flex items-center justify-center pillow-shadow border-[2px] border-[#1e1b13]">
                     <KawaiiPrescription active />
                   </div>
                   <div>
-                    <h3 className="font-headline text-2xl text-on-secondary-container font-extrabold">Ler Receita Médica</h3>
-                    <p className="text-on-secondary-container/80 font-medium">Vou ler o que o doutor escreveu!</p>
+                    <h3 className="font-headline text-3xl text-on-secondary-container mb-2 font-extrabold">Ler Receita Médica</h3>
+                    <p className="text-on-secondary-container/80 text-lg leading-snug font-medium">Não entende a letra do médico? Eu leio para você!</p>
                   </div>
                 </div>
               </button>
             </section>
 
-            <section className="bg-surface-container-low rounded-xl p-6 border-[3px] border-[#1e1b13] flex gap-6 items-center">
-              <div className="organic-blob w-20 h-20 bg-tertiary-container border-[2px] border-[#1e1b13] flex items-center justify-center shadow-md">
-                 <span className="material-symbols-outlined text-on-tertiary-container text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
-              </div>
-              <div className="flex-1">
-                <h4 className="font-headline text-lg font-bold text-tertiary">Dica da Vovó</h4>
-                <p className="text-on-surface leading-tight italic font-medium">"Bebeu sua aguinha hoje, meu bem? Saúde é hidratar!"</p>
+            <section className="bg-surface-container-low rounded-xl p-8 border-[3px] border-[#1e1b13] relative overflow-hidden">
+              <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="organic-blob w-24 h-24 bg-tertiary-container border-[2px] border-[#1e1b13] flex-shrink-0 flex items-center justify-center">
+                   <span className="material-symbols-outlined text-on-tertiary-container text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-headline text-xl text-tertiary font-bold">Dica do Netinho</h4>
+                  <p className="text-on-surface text-xl leading-relaxed italic font-medium">
+                    "Vovó, já tomou sua aguinha hoje? Eu te amo muito e quero te ver sempre bem!"
+                  </p>
+                </div>
               </div>
             </section>
 
+            <div className="bg-surface-container-high rounded-full p-6 flex items-center justify-between border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13]">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center pillow-shadow border-[2px] border-[#1e1b13]">
+                  <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>notifications_active</span>
+                </div>
+                <span className="font-bold text-lg text-on-surface">Seu próximo remédio é às 15:00</span>
+              </div>
+              <ChevronRight className="text-primary" />
+            </div>
+            
             <Button
               onClick={() => setShowEmergencyDialog(true)}
               className="h-16 rounded-xl bg-error text-white text-xl font-extrabold uppercase border-[3px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13] active:translate-y-1 active:shadow-[4px_4px_0px_#1e1b13] transition-all w-full"
@@ -318,32 +336,29 @@ export default function Home() {
 
         {appState === 'REMEDIOS' && (
           <div className="space-y-6 animate-fade-in">
-            <div className="flex items-center gap-4">
-              <h2 className="font-headline text-3xl font-extrabold text-on-background">Meus Remédios</h2>
-            </div>
-            
+            <h2 className="font-headline text-4xl font-extrabold text-on-background">Meus Remédios</h2>
             <div className="space-y-4">
               {isActiveLoading ? (
                 <div className="flex flex-col items-center py-10 gap-2"><Loader2 className="animate-spin text-primary" /><p className="font-bold">Lembrando...</p></div>
               ) : activeMedicines && activeMedicines.length > 0 ? (
                 activeMedicines.map((med) => (
-                  <div key={med.id} className="bg-white rounded-xl p-5 border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13] flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-full bg-primary-container border-[2px] border-[#1e1b13] flex items-center justify-center">
+                  <div key={med.id} className="bg-white rounded-xl p-6 border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13] flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-full bg-primary-container border-[2px] border-[#1e1b13] flex items-center justify-center">
                       <KawaiiMedicine active />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-headline font-extrabold text-xl text-primary">{med.name}</h4>
-                      <p className="text-on-surface-variant font-bold text-sm bg-accent px-3 py-1 rounded-full border-[2px] border-[#1e1b13] inline-block mt-1">
+                      <h4 className="font-headline font-extrabold text-2xl text-primary">{med.name}</h4>
+                      <p className="text-on-surface-variant font-bold text-base bg-accent px-4 py-1.5 rounded-full border-[2px] border-[#1e1b13] inline-block mt-2">
                         {med.schedule}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="bg-surface-container rounded-xl p-10 text-center border-[2px] border-dashed border-[#1e1b13]/20">
+                <div className="bg-surface-container rounded-xl p-10 text-center border-[3px] border-dashed border-[#1e1b13]/20">
                   <KawaiiMedicine />
-                  <p className="mt-4 font-bold text-muted-foreground">Vovó, sua lista de remédios está vazia!</p>
-                  <Button onClick={() => setAppState('INICIO')} className="mt-4 rounded-full border-[2px] border-[#1e1b13]">Começar Agora</Button>
+                  <p className="mt-4 font-bold text-xl text-muted-foreground">Vovó, sua lista de remédios está vazia!</p>
+                  <Button onClick={() => setAppState('INICIO')} className="mt-6 rounded-full border-[3px] border-[#1e1b13] h-14 px-8 font-bold">Começar Agora</Button>
                 </div>
               )}
             </div>
@@ -352,7 +367,7 @@ export default function Home() {
 
         {appState === 'RECEITAS' && (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="font-headline text-3xl font-extrabold text-on-background">Minhas Receitas</h2>
+            <h2 className="font-headline text-4xl font-extrabold text-on-background">Minhas Receitas</h2>
             <div className="space-y-4">
               {isHistoryLoading ? (
                 <Loader2 className="animate-spin mx-auto text-primary" />
@@ -365,22 +380,22 @@ export default function Home() {
                       else setMedicineResult({ medicineName: item.medicineName, simpleExplanation: item.simplifiedExplanation });
                       setAppState('RESULT');
                     }}
-                    className="bg-white rounded-xl p-5 border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13] flex items-center justify-between cursor-pointer"
+                    className="bg-white rounded-xl p-6 border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13] flex items-center justify-between cursor-pointer active:translate-y-1 active:shadow-[2px_2px_0px_#1e1b13]"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-secondary-container border-[2px] border-[#1e1b13] flex items-center justify-center">
+                    <div className="flex items-center gap-6">
+                      <div className="w-14 h-14 rounded-full bg-secondary-container border-[2px] border-[#1e1b13] flex items-center justify-center">
                         <KawaiiPrescription active />
                       </div>
                       <div>
-                        <h4 className="font-bold text-lg">{item.medicineName}</h4>
-                        <p className="text-sm text-muted-foreground">{new Date(item.scanDateTime).toLocaleDateString('pt-BR')}</p>
+                        <h4 className="font-bold text-xl">{item.medicineName}</h4>
+                        <p className="text-base text-muted-foreground font-medium">{new Date(item.scanDateTime).toLocaleDateString('pt-BR')}</p>
                       </div>
                     </div>
                     <ChevronRight className="text-primary" />
                   </div>
                 ))
               ) : (
-                <p className="text-center py-10">Nenhuma receita salva ainda.</p>
+                <p className="text-center py-10 font-bold text-xl">Nenhuma receita salva ainda.</p>
               )}
             </div>
           </div>
@@ -388,18 +403,18 @@ export default function Home() {
 
         {appState === 'CONTA' && (
           <div className="space-y-8 animate-fade-in">
-            <h2 className="font-headline text-3xl font-extrabold text-on-background">Minha Conta</h2>
-            <div className="bg-white p-8 rounded-xl border-[3px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13] flex flex-col items-center gap-6">
-              <div className="w-24 h-24 rounded-full border-[4px] border-[#1e1b13] overflow-hidden shadow-lg">
+            <h2 className="font-headline text-4xl font-extrabold text-on-background">Minha Conta</h2>
+            <div className="bg-white p-10 rounded-xl border-[4px] border-[#1e1b13] shadow-[10px_10px_0px_#1e1b13] flex flex-col items-center gap-8">
+              <div className="w-32 h-32 rounded-full border-[4px] border-[#1e1b13] overflow-hidden shadow-xl">
                 <img src={user.photoURL || ''} className="w-full h-full object-cover" />
               </div>
-              <div className="text-center">
-                <h3 className="font-headline text-2xl font-bold">{user.displayName}</h3>
-                <p className="text-muted-foreground">{user.email}</p>
+              <div className="text-center space-y-2">
+                <h3 className="font-headline text-3xl font-extrabold">{user.displayName}</h3>
+                <p className="text-xl text-muted-foreground font-medium">{user.email}</p>
               </div>
               <Button 
                 onClick={handleSignOut} 
-                className="w-full h-14 rounded-full border-[3px] border-error text-error bg-transparent hover:bg-error/10 font-bold"
+                className="w-full h-16 rounded-xl border-[3px] border-error text-error bg-transparent hover:bg-error/10 font-extrabold text-lg"
               >
                 Sair do Aplicativo
               </Button>
@@ -409,14 +424,14 @@ export default function Home() {
 
         {appState === 'AVISO' && (
           <div className="space-y-6 animate-fade-in">
-             <h2 className="font-headline text-3xl font-extrabold text-on-background">Avisos e Lembretes</h2>
-             <div className="bg-white p-6 rounded-xl border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13] flex items-center gap-4">
-               <div className="w-12 h-12 rounded-full bg-accent border-[2px] border-[#1e1b13] flex items-center justify-center">
+             <h2 className="font-headline text-4xl font-extrabold text-on-background">Avisos e Lembretes</h2>
+             <div className="bg-white p-8 rounded-xl border-[3px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13] flex items-center gap-6">
+               <div className="w-16 h-16 rounded-full bg-accent border-[2px] border-[#1e1b13] flex items-center justify-center">
                  <KawaiiAviso active />
                </div>
                <div>
-                 <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-[1.5px] border-[#1e1b13]">PROXIMAMENTE</span>
-                 <p className="font-bold text-lg mt-1">Beber 200ml de água</p>
+                 <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full border-[2px] border-[#1e1b13]">EM BREVE</span>
+                 <p className="font-extrabold text-2xl mt-2">Beber 200ml de água</p>
                </div>
              </div>
           </div>
@@ -446,41 +461,43 @@ export default function Home() {
       </main>
 
       {/* BottomNavBar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-xl border-t-[3px] border-[#1e1b13] px-4 py-3 pb-8 flex justify-around items-center z-50">
-        <button onClick={() => setAppState('INICIO')} className="flex flex-col items-center gap-1">
-          <div className={cn("px-4 py-1.5 rounded-full border-[2px] transition-all", appState === 'INICIO' ? "bg-primary-container border-[#1e1b13] shadow-[3px_3px_0px_#1e1b13]" : "border-transparent")}>
-            <KawaiiHome active={appState === 'INICIO'} />
-          </div>
-          <span className={cn("text-[10px] font-bold", appState === 'INICIO' ? "text-primary" : "text-muted-foreground")}>Início</span>
-        </button>
+      <nav className="fixed bottom-0 left-0 right-0 bg-surface-container-highest/95 backdrop-blur-xl border-t-[3px] border-[#1e1b13]/15 px-6 pb-8 pt-4 z-50">
+        <div className="max-w-md mx-auto flex justify-between items-center">
+          <button onClick={() => setAppState('INICIO')} className="flex flex-col items-center gap-1 group">
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'INICIO' ? "bg-primary-container border-[2px] border-[#1e1b13]" : "hover:bg-surface-variant")}>
+              <KawaiiHome active={appState === 'INICIO'} />
+            </div>
+            <span className={cn("text-xs font-bold", appState === 'INICIO' ? "text-primary" : "text-on-surface-variant")}>Início</span>
+          </button>
 
-        <button onClick={() => setAppState('REMEDIOS')} className="flex flex-col items-center gap-1">
-          <div className={cn("px-4 py-1.5 rounded-full border-[2px] transition-all", appState === 'REMEDIOS' ? "bg-primary-container border-[#1e1b13] shadow-[3px_3px_0px_#1e1b13]" : "border-transparent")}>
-            <KawaiiMedicine active={appState === 'REMEDIOS'} />
-          </div>
-          <span className={cn("text-[10px] font-bold", appState === 'REMEDIOS' ? "text-primary" : "text-muted-foreground")}>Remédios</span>
-        </button>
+          <button onClick={() => setAppState('REMEDIOS')} className="flex flex-col items-center gap-1 group">
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'REMEDIOS' ? "bg-primary-container border-[2px] border-[#1e1b13]" : "hover:bg-surface-variant")}>
+              <KawaiiMedicine active={appState === 'REMEDIOS'} />
+            </div>
+            <span className={cn("text-xs font-bold", appState === 'REMEDIOS' ? "text-primary" : "text-on-surface-variant")}>Remédios</span>
+          </button>
 
-        <button onClick={() => setAppState('RECEITAS')} className="flex flex-col items-center gap-1">
-          <div className={cn("px-4 py-1.5 rounded-full border-[2px] transition-all", appState === 'RECEITAS' ? "bg-primary-container border-[#1e1b13] shadow-[3px_3px_0px_#1e1b13]" : "border-transparent")}>
-            <KawaiiPrescription active={appState === 'RECEITAS'} />
-          </div>
-          <span className={cn("text-[10px] font-bold", appState === 'RECEITAS' ? "text-primary" : "text-muted-foreground")}>Receitas</span>
-        </button>
+          <button onClick={() => setAppState('RECEITAS')} className="flex flex-col items-center gap-1 group">
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'RECEITAS' ? "bg-primary-container border-[2px] border-[#1e1b13]" : "hover:bg-surface-variant")}>
+              <KawaiiPrescription active={appState === 'RECEITAS'} />
+            </div>
+            <span className={cn("text-xs font-bold", appState === 'RECEITAS' ? "text-primary" : "text-on-surface-variant")}>Receitas</span>
+          </button>
 
-        <button onClick={() => setAppState('CONTA')} className="flex flex-col items-center gap-1">
-          <div className={cn("px-4 py-1.5 rounded-full border-[2px] transition-all", appState === 'CONTA' ? "bg-primary-container border-[#1e1b13] shadow-[3px_3px_0px_#1e1b13]" : "border-transparent")}>
-            <KawaiiAccount active={appState === 'CONTA'} />
-          </div>
-          <span className={cn("text-[10px] font-bold", appState === 'CONTA' ? "text-primary" : "text-muted-foreground")}>Conta</span>
-        </button>
+          <button onClick={() => setAppState('CONTA')} className="flex flex-col items-center gap-1 group">
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'CONTA' ? "bg-primary-container border-[2px] border-[#1e1b13]" : "hover:bg-surface-variant")}>
+              <KawaiiAccount active={appState === 'CONTA'} />
+            </div>
+            <span className={cn("text-xs font-bold", appState === 'CONTA' ? "text-primary" : "text-on-surface-variant")}>Conta</span>
+          </button>
 
-        <button onClick={() => setAppState('AVISO')} className="flex flex-col items-center gap-1">
-          <div className={cn("px-4 py-1.5 rounded-full border-[2px] transition-all", appState === 'AVISO' ? "bg-primary-container border-[#1e1b13] shadow-[3px_3px_0px_#1e1b13]" : "border-transparent")}>
-            <KawaiiAviso active={appState === 'AVISO'} />
-          </div>
-          <span className={cn("text-[10px] font-bold", appState === 'AVISO' ? "text-primary" : "text-muted-foreground")}>Aviso</span>
-        </button>
+          <button onClick={() => setAppState('AVISO')} className="flex flex-col items-center gap-1 group">
+            <div className={cn("w-16 h-10 rounded-full flex items-center justify-center transition-all", appState === 'AVISO' ? "bg-primary-container border-[2px] border-[#1e1b13]" : "hover:bg-surface-variant")}>
+              <KawaiiAviso active={appState === 'AVISO'} />
+            </div>
+            <span className={cn("text-xs font-bold", appState === 'AVISO' ? "text-primary" : "text-on-surface-variant")}>Aviso</span>
+          </button>
+        </div>
       </nav>
 
       {/* Emergency Dialog */}
@@ -495,7 +512,7 @@ export default function Home() {
           </div>
           <div className="flex flex-col gap-3">
             <Button onClick={() => window.location.href = 'tel:192'} className="h-16 rounded-xl bg-error text-white font-bold text-xl border-[3px] border-[#1e1b13] shadow-[4px_4px_0px_#1e1b13]">Sim, ligar para 192</Button>
-            <Button variant="outline" onClick={() => setShowEmergencyDialog(false)} className="rounded-full border-[2px] border-[#1e1b13]">Não, estou bem</Button>
+            <Button variant="outline" onClick={() => setShowEmergencyDialog(false)} className="rounded-full border-[2px] border-[#1e1b13] h-14">Não, estou bem</Button>
           </div>
         </DialogContent>
       </Dialog>
