@@ -75,12 +75,12 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
               fullReadableAddress = city;
             }
 
-            // Se ainda assim der Virginia (comum em ambientes de nuvem), avisamos a vovó
-            if (fullReadableAddress.toLowerCase().includes('virginia') || fullReadableAddress.toLowerCase().includes('united states')) {
+            // Se o GPS retornar Virginia ou EUA (comum em servidores), avisamos a vovó
+            if (fullReadableAddress.toLowerCase().includes('virginia') || fullReadableAddress.toLowerCase().includes('united states') || city.toLowerCase().includes('sua cidade')) {
               setIsLocating(false);
               toast({
-                title: "Achei um lugar longe!",
-                description: "Vovó, o GPS está dizendo que a senhora está nos EUA! Vamos corrigir para o Rio?",
+                title: "Achei um lugar muito longe!",
+                description: "Vovó, o GPS está dizendo que a senhora está nos EUA! Vamos escrever o seu endereço do Rio?",
               });
               setIsEditingAddress(true);
               return;
@@ -117,6 +117,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
             title: "Erro de localização",
             description: message,
           });
+          setIsEditingAddress(true);
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
@@ -127,6 +128,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         title: "Ih, vovó!",
         description: "Seu celular não tem a função de GPS funcionando agora.",
       });
+      setIsEditingAddress(true);
     }
   };
 
@@ -144,9 +146,9 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
 
   // Lógica para busca de imagem: se for Rio, busca Cristo Redentor
   const cityForImage = currentAddress.split(',').pop()?.trim() || currentAddress;
-  const isRio = currentAddress.toLowerCase().includes('rio') || currentAddress.toLowerCase().includes('janeiro');
+  const isRio = currentAddress.toLowerCase().includes('rio') || currentAddress.toLowerCase().includes('janeiro') || currentAddress.toLowerCase().includes('campo grande');
   const cityImageHint = isRio ? "cristo redentor corcovado rio de janeiro landmark" : `${cityForImage} city landmark tourism`;
-  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city-v2";
+  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city-v3";
 
   return (
     <div className="space-y-12 animate-fade-in pb-20">
@@ -219,6 +221,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
                   onChange={(e) => setTempAddress(e.target.value)}
                   placeholder="Ex: Campo Grande, Rio de Janeiro"
                   className="h-14 border-[3px] border-[#1e1b13] rounded-xl font-bold text-xl px-6"
+                  autoFocus
                 />
               </div>
               <Button 
