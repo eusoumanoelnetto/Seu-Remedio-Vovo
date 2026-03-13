@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, X, RefreshCw, Image as ImageIcon } from 'lucide-react';
+import { Camera, X, RefreshCw, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface CameraCaptureProps {
   onCapture: (dataUri: string) => void;
@@ -15,21 +16,47 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function setupCamera() {
       try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
-          audio: false,
-        });
+        // Tenta primeiro a câmera traseira (environment)
+        let mediaStream;
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' },
+            audio: false,
+          });
+        } catch (innerErr: any) {
+          // Se falhar (ex: no PC que só tem webcam frontal), tenta qualquer câmera disponível
+          if (innerErr.name === 'NotFoundError' || innerErr.name === 'OverconstrainedError') {
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: false,
+            });
+          } else {
+            throw innerErr;
+          }
+        }
+        
         setStream(mediaStream);
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Camera access error:", err);
-        setError("Não conseguimos abrir a câmera. Por favor, verifique se a senhora autorizou o uso da câmera no celular.");
+        let message = "Não conseguimos abrir a câmera, vovó.";
+        
+        if (err.name === 'NotFoundError') {
+          message = "Ih, vovó! Não encontrei nenhuma câmera ligada no seu aparelho.";
+        } else if (err.name === 'NotAllowedError') {
+          message = "Vovó, a senhora precisa clicar em 'Permitir' para eu conseguir ver o remédio!";
+        } else {
+          message = "Tivemos um probleminha técnico com a câmera. Vamos tentar de novo?";
+        }
+        
+        setError(message);
       }
     }
 
@@ -59,19 +86,30 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
 
   if (error) {
     return (
-      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center p-10 text-center space-y-10 animate-fade-in">
-        <div className="bg-error-container p-6 rounded-full shadow-inner">
-          <X className="w-16 h-16 text-error" />
+      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center p-10 text-center space-y-10 animate-fade-in z-[110]">
+        <div className="w-32 h-32 rounded-full bg-error/10 border-[4px] border-error flex items-center justify-center shadow-xl animate-bounce">
+          <AlertCircle className="w-16 h-16 text-error" />
         </div>
         <div className="space-y-4 max-w-sm">
           <p className="text-3xl font-headline font-extrabold text-on-background leading-tight">{error}</p>
-          <p className="text-xl text-muted-foreground">Tente usar um arquivo da sua galeria enquanto isso!</p>
+          <div className="bg-surface-container-low p-6 rounded-[2rem] border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13] italic">
+            <p className="text-xl text-on-surface font-medium">
+              "Não fique triste, vovó! A senhora pode escolher uma foto que já tirou na sua galeria."
+            </p>
+          </div>
         </div>
         <div className="flex flex-col gap-4 w-full max-w-xs">
-          <Button onClick={onFileSelect} size="lg" className="h-20 w-full text-2xl rounded-[2rem] bg-primary text-white shadow-xl">
+          <Button 
+            onClick={onFileSelect} 
+            className="h-20 w-full text-2xl rounded-2xl bg-primary text-white border-[3px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13] active:translate-y-1 active:shadow-none font-extrabold"
+          >
              Escolher da Galeria
           </Button>
-          <Button onClick={onCancel} variant="outline" className="h-16 w-full text-xl rounded-[2rem] border-2 border-primary/20">
+          <Button 
+            onClick={onCancel} 
+            variant="outline" 
+            className="h-16 w-full text-xl rounded-full border-[3px] border-[#1e1b13] font-bold"
+          >
              Voltar ao Início
           </Button>
         </div>
@@ -93,36 +131,36 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
         <div className="absolute top-0 inset-x-0 p-8 flex justify-between items-center z-10">
           <button
             onClick={onCancel}
-            className="p-5 bg-black/50 backdrop-blur-md rounded-full text-white border border-white/20 active:scale-90 transition-transform"
+            className="p-5 bg-black/50 backdrop-blur-md rounded-full text-white border-2 border-white/20 active:scale-90 transition-transform"
           >
             <X className="w-8 h-8" />
           </button>
-          <div className="bg-white/95 backdrop-blur-md px-8 py-4 rounded-full shadow-2xl border border-white/50 flex items-center gap-3">
+          <div className="bg-white/95 backdrop-blur-md px-8 py-4 rounded-full shadow-2xl border-[3px] border-[#1e1b13] flex items-center gap-3">
              <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-             <span className="text-xl font-headline font-extrabold text-primary">MedGrandma Vendo...</span>
+             <span className="text-xl font-headline font-extrabold text-primary">Olhando com amor...</span>
           </div>
         </div>
 
         {/* Framing Guide */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className="w-[85%] aspect-square border-4 border-white/60 rounded-[3rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
-            <div className="absolute inset-0 border-8 border-dashed border-white/30 rounded-[3rem] animate-pulse" />
+          <div className="w-[85%] aspect-square border-[6px] border-white/60 rounded-[3.5rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
+            <div className="absolute inset-0 border-8 border-dashed border-white/30 rounded-[3.5rem] animate-pulse" />
           </div>
         </div>
       </div>
 
-      <div className="h-64 bg-background flex flex-col items-center justify-center px-8 border-t border-accent relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      <div className="h-64 bg-background flex flex-col items-center justify-center px-8 border-t-[4px] border-[#1e1b13] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-2 bg-primary/10" />
         
         <div className="flex items-center justify-between w-full max-w-sm">
           <button
             onClick={onFileSelect}
-            className="flex flex-col items-center gap-2 group opacity-80 hover:opacity-100 transition-opacity"
+            className="flex flex-col items-center gap-2 group transition-all active:scale-90"
           >
-            <div className="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center pillow-shadow text-primary">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border-[3px] border-[#1e1b13] shadow-[4px_4px_0px_#1e1b13] text-primary">
               <ImageIcon className="w-8 h-8" />
             </div>
-            <span className="text-sm font-bold text-primary">Galeria</span>
+            <span className="text-sm font-extrabold text-primary uppercase">Galeria</span>
           </button>
 
           <button
@@ -130,15 +168,15 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
             className="group relative flex items-center justify-center scale-125"
           >
             <div className="absolute w-28 h-28 bg-primary/10 rounded-full animate-ping duration-[3000ms]" />
-            <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90 border-8 border-white">
+            <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-[10px_10px_0px_#1e1b13] transition-all active:scale-90 active:shadow-none border-[6px] border-white">
               <Camera className="w-10 h-10 text-white" />
             </div>
           </button>
 
-          <div className="w-16 invisible" /> {/* Spacer */}
+          <div className="w-16" /> {/* Spacer */}
         </div>
         
-        <p className="mt-8 text-primary font-headline font-extrabold text-2xl animate-pulse">Aperte aqui para ler!</p>
+        <p className="mt-8 text-primary font-headline font-extrabold text-2xl animate-pulse tracking-tight uppercase">Aperte aqui para ler!</p>
       </div>
     </div>
   );
