@@ -4,8 +4,8 @@
     {
       "id": "map-placeholder",
       "description": "Um mapa ilustrativo fofo de farmácias na vizinhança",
-      "imageUrl": "https://picsum.photos/seed/vovo-mapa-fofo/600/400",
-      "imageHint": "city map"
+      "imageUrl": "https://picsum.photos/seed/vovo-mapa-vizinhanca/600/400",
+      "imageHint": "neighborhood map"
     }
   ]
 }
