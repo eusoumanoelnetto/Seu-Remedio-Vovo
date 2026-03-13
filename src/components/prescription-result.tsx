@@ -96,13 +96,13 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           </div>
         </div>
 
-        {/* Fake Map View - Estilo Sticker solicitado pela vovó */}
+        {/* Map View - Estilo Sticker solicitado pela vovó */}
         <div className="relative h-64 rounded-[3.5rem] overflow-hidden border-[5px] border-[#1e1b13] shadow-[12px_12px_0px_#1e1b13] ambient-float group">
           <Image 
-            src={mapPlaceholder?.imageUrl || "https://picsum.photos/seed/map/600/400"} 
+            src={mapPlaceholder?.imageUrl || "https://picsum.photos/seed/mapa-fofo-farmacias/600/400"} 
             alt="Mapa das Farmácias" 
             fill 
-            data-ai-hint={mapPlaceholder?.imageHint || "city map"}
+            data-ai-hint={mapPlaceholder?.imageHint || "flat map"}
             className="object-cover opacity-90 transition-transform group-hover:scale-110 duration-1000"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
