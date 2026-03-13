@@ -71,13 +71,14 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
               fullReadableAddress = city;
             }
 
-            // Se o GPS retornar Virginia ou EUA (comum em servidores de nuvem), avisamos a vovó
+            // Se o GPS retornar Virginia ou EUA (comum em servidores de nuvem), avisamos a vovó e sugerimos Campo Grande
             if (fullReadableAddress.toLowerCase().includes('virginia') || fullReadableAddress.toLowerCase().includes('united states') || city.toLowerCase().includes('sua cidade')) {
               setIsLocating(false);
               toast({
                 title: "O GPS se confundiu!",
-                description: "Vovó, ele está dizendo que a senhora está nos EUA! Vamos escrever Campo Grande?",
+                description: "Vovó, ele está dizendo que a senhora está nos EUA! Vamos escrever o endereço de Campo Grande?",
               });
+              setTempAddress("R. Augusto de Vasconcelos, Campo Grande, Rio de Janeiro");
               setIsEditingAddress(true);
               return;
             }
@@ -92,24 +93,18 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           } catch (err) {
             console.error("Geocoding error:", err);
             setIsLocating(false);
-            toast({
-              variant: "destructive",
-              title: "Erro de endereço",
-              description: "Não consegui ler o nome da rua, vovó. Pode digitar para mim?",
-            });
+            setTempAddress("Campo Grande, Rio de Janeiro");
             setIsEditingAddress(true);
           }
         },
         (error) => {
           setIsLocating(false);
-          let message = "Vovó, a senhora precisa clicar em 'Permitir' para eu te achar!";
-          if (error.code === error.TIMEOUT) message = "O GPS demorou muito para responder, vovó.";
-          
           toast({
             variant: "destructive",
             title: "Localização",
-            description: message,
+            description: "Vovó, a senhora precisa clicar em 'Permitir' no celular para eu te achar!",
           });
+          setTempAddress("Campo Grande, Rio de Janeiro");
           setIsEditingAddress(true);
         },
         { enableHighAccuracy: true, timeout: 10000 }
@@ -127,7 +122,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
       setLocationConfirmed(true);
       toast({
         title: "Endereço atualizado!",
-        description: `Entendido, vovó! Agora estamos em ${tempAddress}.`,
+        description: `Entendido, vovó! Agora o netinho vai procurar farmácias em ${tempAddress}.`,
       });
     }
   };
@@ -135,7 +130,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
   const cityForImage = currentAddress.split(',').pop()?.trim() || currentAddress;
   const isRio = currentAddress.toLowerCase().includes('rio') || currentAddress.toLowerCase().includes('janeiro') || currentAddress.toLowerCase().includes('campo grande');
   const cityImageHint = isRio ? "cristo redentor corcovado rio de janeiro landmark" : `${cityForImage} city landmark tourism`;
-  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city-v4";
+  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city-v5";
 
   return (
     <div className="space-y-12 animate-fade-in pb-20">

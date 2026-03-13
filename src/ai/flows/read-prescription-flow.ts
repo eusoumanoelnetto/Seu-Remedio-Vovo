@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview Um fluxo Genkit para ler receitas médicas, identificar remédios e sugerir farmácias baseando-se na localização real.
+ * @fileOverview Um fluxo Genkit para ler receitas médicas, identificar remédios e sugerir farmácias reais próximas ao endereço exato.
  */
 
 import {ai} from '@/ai/genkit';
@@ -12,7 +12,7 @@ const ReadPrescriptionInputSchema = z.object({
     .describe(
       "Uma foto da receita médica, como um data URI em Base64."
     ),
-  userLocation: z.string().optional().describe('Coordenadas ou endereço do usuário para busca de farmácias.'),
+  userLocation: z.string().optional().describe('Endereço ou bairro do usuário (ex: Campo Grande, Rio de Janeiro).'),
 });
 export type ReadPrescriptionInput = z.infer<typeof ReadPrescriptionInputSchema>;
 
@@ -26,15 +26,15 @@ const MedicineInfoSchema = z.object({
 const PharmacyInfoSchema = z.object({
   name: z.string().describe('Nome da farmácia.'),
   address: z.string().describe('Endereço da farmácia.'),
-  whatsapp: z.string().describe('Número do WhatsApp formatado (ex: 11999999999).'),
-  distance: z.string().describe('Distância estimada (ex: 350m).'),
-  status: z.string().describe('Status curto (ex: Aberta agora, Entrega rápida).'),
+  whatsapp: z.string().describe('Número do WhatsApp real da farmácia.'),
+  distance: z.string().describe('Distância estimada (ex: 300m da sua rua).'),
+  status: z.string().describe('Status curto (ex: Aberta agora).'),
 });
 
 const ReadPrescriptionOutputSchema = z.object({
   medicines: z.array(MedicineInfoSchema).describe('Lista de medicamentos identificados.'),
-  pharmacies: z.array(PharmacyInfoSchema).describe('As 3 farmácias mais próximas e confiáveis da região.'),
-  city: z.string().describe('Cidade detectada do usuário.'),
+  pharmacies: z.array(PharmacyInfoSchema).describe('As 3 farmácias REAIS mais próximas da localização fornecida.'),
+  city: z.string().describe('Bairro e cidade detectada.'),
 });
 export type ReadPrescriptionOutput = z.infer<typeof ReadPrescriptionOutputSchema>;
 
@@ -51,13 +51,12 @@ const readPrescriptionPrompt = ai.definePrompt({
   prompt: `Você é um assistente farmacêutico gentil para idosos. 
 Sua tarefa é ler a foto de uma RECEITA MÉDICA e:
 1. Identificar EXATAMENTE os nomes dos remédios.
-2. Fornecer um "shortPurpose" (ex: "Para baixar a pressão") e uma "longInstruction" (instrução detalhada e carinhosa).
-3. Sugerir 3 farmácias REAIS próximas à localização: {{userLocation}}. Use farmácias reais da região.
-4. Fornecer o WhatsApp real ou verossímil da região.
+2. Fornecer um "shortPurpose" e uma "longInstruction" carinhosa.
+3. Sugerir 3 farmácias REAIS próximas a: {{userLocation}}. 
+   IMPORTANTE: Se a localização for Campo Grande, Rio de Janeiro, procure farmácias reais próximas à Rua Augusto de Vasconcelos (como Drogarias Pacheco, Venancio, Raia, etc.).
+4. Fornecer o WhatsApp real dessas farmácias.
 
-Cidade atual: {{userLocation}}.
-
-Seja acolhedor e use linguagem popular.
+Seja muito acolhedor e use linguagem popular.
 
 Photo: {{media url=photoDataUri}}`,
 });
