@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Volume2, Loader2, Heart, MapPin, MessageCircle, RefreshCcw, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -30,6 +30,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
   const [loadingAudioIdx, setLoadingAudioIdx] = useState<number | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationConfirmed, setLocationConfirmed] = useState(false);
+  const [currentCity, setCurrentCity] = useState(data.city);
   const { toast } = useToast();
 
   const handlePlayAudio = async (idx: number, name: string, instruction: string) => {
@@ -53,9 +54,10 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         (position) => {
           setIsLocating(false);
           setLocationConfirmed(true);
+          // Em um app real usaríamos geocoding. Aqui simulamos a confirmação da cidade.
           toast({
             title: "Localização confirmada!",
-            description: `Que maravilha, vovó! Já sei que a senhora está em ${data.city}.`,
+            description: `Que maravilha, vovó! Já sei que a senhora está em ${currentCity}.`,
           });
         },
         (error) => {
@@ -77,9 +79,9 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
     }
   };
 
-  // Melhorando o hint de imagem para ser mais específico
-  const cityImageHint = data.city ? `${data.city} landmark` : "city landmark";
-  const cityImageSeed = data.city ? data.city.toLowerCase().replace(/\s+/g, '-') : "cidade-fofa";
+  // Melhorando o hint de imagem para ser mais específico baseado na cidade
+  const cityImageHint = currentCity ? `${currentCity} landmark` : "city landmark";
+  const cityImageSeed = currentCity ? currentCity.toLowerCase().replace(/\s+/g, '-') : "cidade-fofa";
 
   return (
     <div className="space-y-12 animate-fade-in pb-20">
@@ -130,7 +132,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           <h2 className="font-headline font-extrabold text-3xl text-on-background">Farmácias Perto de Você</h2>
           <div className="flex items-center gap-2 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border-[2px] border-[#1e1b13] w-fit">
             <MapPin className="w-5 h-5 text-primary" />
-            <span className="font-bold text-on-surface-variant">Vovó, achamos farmácias em {data.city || 'sua região'}!</span>
+            <span className="font-bold text-on-surface-variant">Vovó, achamos farmácias em {currentCity || 'sua região'}!</span>
           </div>
         </div>
 
@@ -138,7 +140,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         <div className="relative h-80 rounded-[3.5rem] overflow-hidden border-[5px] border-[#1e1b13] shadow-[12px_12px_0px_#1e1b13] ambient-float group">
           <Image 
             src={`https://picsum.photos/seed/${cityImageSeed}/800/600`} 
-            alt={`Foto de ${data.city || 'sua cidade'}`} 
+            alt={`Foto de ${currentCity || 'sua cidade'}`} 
             fill 
             data-ai-hint={cityImageHint}
             className="object-cover opacity-90 transition-transform group-hover:scale-110 duration-1000"
@@ -165,7 +167,7 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
             </button>
             <div className="bg-white/95 backdrop-blur-md px-8 py-3 rounded-full border-[2px] border-[#1e1b13] shadow-lg">
               <p className="font-extrabold text-primary text-base uppercase tracking-tight text-center">
-                {locationConfirmed ? data.city : isLocating ? "Te procurando..." : "Clique para confirmar local"}
+                {locationConfirmed ? currentCity : isLocating ? "Te procurando..." : "Clique para confirmar local"}
               </p>
             </div>
           </div>

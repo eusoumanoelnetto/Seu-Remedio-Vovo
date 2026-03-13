@@ -86,6 +86,7 @@ export default function Home() {
   const [prescriptionResult, setPrescriptionResult] = useState<ReadPrescriptionOutput | null>(null);
   const [showEmergencyDialog, setShowEmergencyDialog] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [userLocation, setUserLocation] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Firestore Queries
@@ -129,7 +130,7 @@ export default function Home() {
       toast({ 
         variant: "destructive", 
         title: "Ih, deu um erro!", 
-        description: "Tivemos um problema com o login do Google." 
+        description: "Tivemos um problema com o login do Google. Ative o Google no Console do Firebase!" 
       });
     } finally {
       setIsLoggingIn(false);
@@ -143,6 +144,15 @@ export default function Home() {
 
   const handleStartCapture = (mode: AppMode) => {
     setAppMode(mode);
+    if (mode === 'PRESCRIPTION') {
+      // Tentar capturar localização antes
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => setUserLocation(`${pos.coords.latitude}, ${pos.coords.longitude}`),
+          () => console.log("Localização não permitida")
+        );
+      }
+    }
     setAppState('CAPTURING');
   };
   
@@ -162,13 +172,13 @@ export default function Home() {
           });
         }
       } else {
-        const output = await readPrescription({ photoDataUri });
+        const output = await readPrescription({ photoDataUri, userLocation });
         setPrescriptionResult(output);
         if (user) {
           addDocumentNonBlocking(collection(db, 'users', user.uid, 'medicine_scans'), {
             userId: user.uid,
             scannedImageUrl: photoDataUri,
-            medicineName: `Receita identificada`,
+            medicineName: `Receita: ${output.medicines.map(m => m.name).join(', ')}`,
             simplifiedExplanation: `Receita com ${output.medicines.length} itens.`,
             scanDateTime: new Date().toISOString(),
             rawAiResponse: JSON.stringify(output)
