@@ -6,6 +6,12 @@
       "description": "Um mapa ilustrativo fofo de farmácias na vizinhança",
       "imageUrl": "https://picsum.photos/seed/mapa-colorido-fofo-vovo/600/400",
       "imageHint": "cartoon map"
+    },
+    {
+      "id": "city-placeholder",
+      "description": "Uma foto bonita e icônica da cidade",
+      "imageUrl": "https://picsum.photos/seed/cidade-bonita-vovo/800/600",
+      "imageHint": "city skyline"
     }
   ]
 }

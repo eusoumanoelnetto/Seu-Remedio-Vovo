@@ -2,12 +2,13 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Volume2, Loader2, Heart, MapPin, MessageCircle, RefreshCcw } from 'lucide-react';
+import { Volume2, Loader2, Heart, MapPin, MessageCircle, RefreshCcw, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import type { ReadPrescriptionOutput } from '@/ai/flows/read-prescription-flow';
 import { textToSpeech } from '@/ai/flows/tts-flow';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useToast } from '@/hooks/use-toast';
 
 const KawaiiDoc = () => (
   <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,7 +28,11 @@ interface PrescriptionResultProps {
 
 export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
   const [loadingAudioIdx, setLoadingAudioIdx] = useState<number | null>(null);
-  const mapPlaceholder = PlaceHolderImages.find(img => img.id === 'map-placeholder');
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationConfirmed, setLocationConfirmed] = useState(false);
+  const { toast } = useToast();
+
+  const cityPlaceholder = PlaceHolderImages.find(img => img.id === 'city-placeholder');
 
   const handlePlayAudio = async (idx: number, name: string, instruction: string) => {
     setLoadingAudioIdx(idx);
@@ -40,6 +45,37 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
       console.error("TTS error:", error);
     } finally {
       setLoadingAudioIdx(null);
+    }
+  };
+
+  const handleConfirmLocation = () => {
+    setIsLocating(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setIsLocating(false);
+          setLocationConfirmed(true);
+          toast({
+            title: "Localização confirmada!",
+            description: `Que maravilha, vovó! Já sei que a senhora está em ${data.city}.`,
+          });
+        },
+        (error) => {
+          setIsLocating(false);
+          toast({
+            variant: "destructive",
+            title: "Erro de localização",
+            description: "Não consegui te achar, vovó. Pode ser que o GPS esteja desligado.",
+          });
+        }
+      );
+    } else {
+      setIsLocating(false);
+      toast({
+        variant: "destructive",
+        title: "Ih, vovó!",
+        description: "Seu celular não deixa eu ver onde a senhora está.",
+      });
     }
   };
 
@@ -96,21 +132,40 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           </div>
         </div>
 
-        {/* Map View - Estilo Sticker solicitado pela vovó */}
-        <div className="relative h-64 rounded-[3.5rem] overflow-hidden border-[5px] border-[#1e1b13] shadow-[12px_12px_0px_#1e1b13] ambient-float group">
+        {/* Map View - Agora com foto da cidade e botão de confirmação */}
+        <div className="relative h-80 rounded-[3.5rem] overflow-hidden border-[5px] border-[#1e1b13] shadow-[12px_12px_0px_#1e1b13] ambient-float group">
           <Image 
-            src={mapPlaceholder?.imageUrl || "https://picsum.photos/seed/mapa-fofo-farmacias/600/400"} 
-            alt="Mapa das Farmácias" 
+            src={`https://picsum.photos/seed/${data.city || 'cidade'}/800/600`} 
+            alt={`Foto de ${data.city || 'sua cidade'}`} 
             fill 
-            data-ai-hint={mapPlaceholder?.imageHint || "flat map"}
+            data-ai-hint={data.city ? `${data.city} skyline` : "city skyline"}
             className="object-cover opacity-90 transition-transform group-hover:scale-110 duration-1000"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent" />
-          {/* Marcador central animado */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-             <div className="w-14 h-14 bg-error rounded-full border-[3px] border-[#1e1b13] flex items-center justify-center shadow-xl animate-bounce">
-                <span className="material-symbols-outlined text-white text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
-             </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
+          
+          {/* Botão de confirmação estilo marcador pulsante */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
+            <button 
+              onClick={handleConfirmLocation}
+              disabled={isLocating || locationConfirmed}
+              className={`relative w-20 h-20 rounded-full border-[4px] border-[#1e1b13] shadow-2xl flex items-center justify-center transition-all active:scale-95 ${locationConfirmed ? 'bg-success text-white' : 'bg-white text-primary'}`}
+            >
+              {!locationConfirmed && !isLocating && (
+                <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+              )}
+              {isLocating ? (
+                <Loader2 className="w-10 h-10 animate-spin" />
+              ) : locationConfirmed ? (
+                <CheckCircle2 className="w-10 h-10" />
+              ) : (
+                <span className="material-symbols-outlined text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
+              )}
+            </button>
+            <div className="bg-white/95 backdrop-blur-md px-6 py-2 rounded-full border-[2px] border-[#1e1b13] shadow-lg">
+              <p className="font-extrabold text-primary text-sm uppercase tracking-tight">
+                {locationConfirmed ? "Local confirmado!" : isLocating ? "Te procurando..." : "Clique para confirmar local"}
+              </p>
+            </div>
           </div>
         </div>
 
