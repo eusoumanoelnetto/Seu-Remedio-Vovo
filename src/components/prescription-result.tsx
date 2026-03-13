@@ -32,8 +32,6 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const { toast } = useToast();
 
-  const cityPlaceholder = PlaceHolderImages.find(img => img.id === 'city-placeholder');
-
   const handlePlayAudio = async (idx: number, name: string, instruction: string) => {
     setLoadingAudioIdx(idx);
     try {
@@ -79,16 +77,20 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
     }
   };
 
+  // Melhorando o hint de imagem para ser mais específico
+  const cityImageHint = data.city ? `${data.city} landmark` : "city landmark";
+  const cityImageSeed = data.city ? data.city.toLowerCase().replace(/\s+/g, '-') : "cidade-fofa";
+
   return (
     <div className="space-y-12 animate-fade-in pb-20">
       {/* Hero Section */}
       <header className="text-center space-y-4 py-6">
         <span className="inline-block px-6 py-2 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-extrabold text-xs uppercase tracking-widest border-[3px] border-[#1e1b13] shadow-[4px_4px_0px_#1e1b13]">
-          INTELIGÊNCIA DA VOVÓ
+          INTELIGÊNCIA DO NETINHO
         </span>
         <h2 className="font-headline font-extrabold text-5xl text-on-background tracking-tight">Sua Receitinha</h2>
         <p className="text-on-surface-variant font-bold text-xl px-4 italic">
-          "A IA do Netinho leu tudinho e encontrou esses remédios para a senhora!"
+          "O Netinho leu tudinho e encontrou esses remédios para a senhora!"
         </p>
       </header>
 
@@ -132,23 +134,23 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           </div>
         </div>
 
-        {/* Map View - Agora com foto da cidade e botão de confirmação */}
+        {/* Map View - Com foto icônica da cidade */}
         <div className="relative h-80 rounded-[3.5rem] overflow-hidden border-[5px] border-[#1e1b13] shadow-[12px_12px_0px_#1e1b13] ambient-float group">
           <Image 
-            src={`https://picsum.photos/seed/${data.city || 'cidade'}/800/600`} 
+            src={`https://picsum.photos/seed/${cityImageSeed}/800/600`} 
             alt={`Foto de ${data.city || 'sua cidade'}`} 
             fill 
-            data-ai-hint={data.city ? `${data.city} skyline` : "city skyline"}
+            data-ai-hint={cityImageHint}
             className="object-cover opacity-90 transition-transform group-hover:scale-110 duration-1000"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-transparent to-transparent" />
           
           {/* Botão de confirmação estilo marcador pulsante */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 w-full px-10">
             <button 
               onClick={handleConfirmLocation}
               disabled={isLocating || locationConfirmed}
-              className={`relative w-20 h-20 rounded-full border-[4px] border-[#1e1b13] shadow-2xl flex items-center justify-center transition-all active:scale-95 ${locationConfirmed ? 'bg-success text-white' : 'bg-white text-primary'}`}
+              className={`relative w-20 h-20 rounded-full border-[4px] border-[#1e1b13] shadow-2xl flex items-center justify-center transition-all active:scale-95 ${locationConfirmed ? 'bg-secondary text-white' : 'bg-white text-primary'}`}
             >
               {!locationConfirmed && !isLocating && (
                 <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
@@ -161,9 +163,9 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
                 <span className="material-symbols-outlined text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
               )}
             </button>
-            <div className="bg-white/95 backdrop-blur-md px-6 py-2 rounded-full border-[2px] border-[#1e1b13] shadow-lg">
-              <p className="font-extrabold text-primary text-sm uppercase tracking-tight">
-                {locationConfirmed ? "Local confirmado!" : isLocating ? "Te procurando..." : "Clique para confirmar local"}
+            <div className="bg-white/95 backdrop-blur-md px-8 py-3 rounded-full border-[2px] border-[#1e1b13] shadow-lg">
+              <p className="font-extrabold text-primary text-base uppercase tracking-tight text-center">
+                {locationConfirmed ? data.city : isLocating ? "Te procurando..." : "Clique para confirmar local"}
               </p>
             </div>
           </div>
