@@ -62,19 +62,29 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
             );
             const addressData = await response.json();
             
-            // Extrai as partes do endereço de forma carinhosa
+            // Prioriza o bairro (suburb/neighbourhood) e a cidade
             const neighborhood = addressData.address.suburb || addressData.address.neighbourhood || addressData.address.city_district || addressData.address.village;
-            const city = addressData.address.city || addressData.address.town || "sua cidade";
+            const city = addressData.address.city || addressData.address.town || addressData.address.municipality || "sua cidade";
             const state = addressData.address.state;
             
             let fullReadableAddress = "";
-            if (neighborhood && neighborhood !== city) {
-              fullReadableAddress = `${neighborhood}, ${city}`;
+            if (neighborhood) {
+              fullReadableAddress = neighborhood;
+              if (city && neighborhood !== city) fullReadableAddress += `, ${city}`;
             } else {
               fullReadableAddress = city;
             }
 
-            if (state) fullReadableAddress += ` - ${state}`;
+            // Se ainda assim der Virginia (comum em ambientes de nuvem), avisamos a vovó
+            if (fullReadableAddress.toLowerCase().includes('virginia') || fullReadableAddress.toLowerCase().includes('united states')) {
+              setIsLocating(false);
+              toast({
+                title: "Achei um lugar longe!",
+                description: "Vovó, o GPS está dizendo que a senhora está nos EUA! Vamos corrigir para o Rio?",
+              });
+              setIsEditingAddress(true);
+              return;
+            }
 
             setCurrentAddress(fullReadableAddress);
             setIsLocating(false);
@@ -132,9 +142,11 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
     }
   };
 
+  // Lógica para busca de imagem: se for Rio, busca Cristo Redentor
   const cityForImage = currentAddress.split(',').pop()?.trim() || currentAddress;
-  const cityImageHint = `${cityForImage} city landmark tourism`;
-  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city";
+  const isRio = currentAddress.toLowerCase().includes('rio') || currentAddress.toLowerCase().includes('janeiro');
+  const cityImageHint = isRio ? "cristo redentor corcovado rio de janeiro landmark" : `${cityForImage} city landmark tourism`;
+  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city-v2";
 
   return (
     <div className="space-y-12 animate-fade-in pb-20">
@@ -194,14 +206,14 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
               className="text-primary font-bold flex items-center gap-2 hover:bg-primary-container/20 rounded-full h-12 border-[2px] border-transparent hover:border-[#1e1b13] transition-all"
             >
               <Edit2 className="w-5 h-5" />
-              Não é aqui?
+              Não mora nesse lugar?
             </Button>
           </div>
 
           {isEditingAddress && (
             <div className="flex flex-col sm:flex-row gap-3 animate-fade-in bg-white p-6 rounded-[2rem] border-[4px] border-[#1e1b13] shadow-[8px_8px_0px_#1e1b13]">
               <div className="flex-1 space-y-2">
-                <p className="font-bold text-primary ml-2">Escreva seu bairro ou cidade, vovó:</p>
+                <p className="font-bold text-primary ml-2">Onde a senhora mora, vovó?</p>
                 <Input 
                   value={tempAddress} 
                   onChange={(e) => setTempAddress(e.target.value)}
