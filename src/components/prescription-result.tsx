@@ -2,13 +2,14 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Volume2, Loader2, Heart, MapPin, MessageCircle, RefreshCcw, CheckCircle2 } from 'lucide-react';
+import { Volume2, Loader2, Heart, MapPin, MessageCircle, RefreshCcw, CheckCircle2, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import type { ReadPrescriptionOutput } from '@/ai/flows/read-prescription-flow';
 import { textToSpeech } from '@/ai/flows/tts-flow';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 const KawaiiDoc = () => (
   <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,6 +32,8 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
   const [isLocating, setIsLocating] = useState(false);
   const [locationConfirmed, setLocationConfirmed] = useState(false);
   const [currentCity, setCurrentCity] = useState(data.city);
+  const [isEditingCity, setIsEditingCity] = useState(false);
+  const [tempCity, setTempCity] = useState(data.city);
   const { toast } = useToast();
 
   const handlePlayAudio = async (idx: number, name: string, instruction: string) => {
@@ -54,7 +57,6 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         (position) => {
           setIsLocating(false);
           setLocationConfirmed(true);
-          // Em um app real usaríamos geocoding. Aqui simulamos a confirmação da cidade.
           toast({
             title: "Localização confirmada!",
             description: `Que maravilha, vovó! Já sei que a senhora está em ${currentCity}.`,
@@ -79,9 +81,21 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
     }
   };
 
+  const handleSaveCity = () => {
+    if (tempCity.trim()) {
+      setCurrentCity(tempCity);
+      setIsEditingCity(false);
+      setLocationConfirmed(true);
+      toast({
+        title: "Cidade atualizada!",
+        description: `Entendido, vovó! Agora estamos em ${tempCity}.`,
+      });
+    }
+  };
+
   // Melhorando o hint de imagem para ser mais específico baseado na cidade
-  const cityImageHint = currentCity ? `${currentCity} landmark` : "city landmark";
-  const cityImageSeed = currentCity ? currentCity.toLowerCase().replace(/\s+/g, '-') : "cidade-fofa";
+  const cityImageHint = currentCity ? `${currentCity} city landmark tourism` : "city landmark";
+  const cityImageSeed = currentCity ? currentCity.toLowerCase().replace(/\s+/g, '-') + "-vovo-city" : "cidade-fofa";
 
   return (
     <div className="space-y-12 animate-fade-in pb-20">
@@ -128,12 +142,34 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
 
       {/* Pharmacy Section */}
       <section className="space-y-8 pt-4">
-        <div className="space-y-2 px-2">
+        <div className="space-y-2 px-2 flex flex-col gap-2">
           <h2 className="font-headline font-extrabold text-3xl text-on-background">Farmácias Perto de Você</h2>
-          <div className="flex items-center gap-2 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-full border-[2px] border-[#1e1b13] w-fit">
-            <MapPin className="w-5 h-5 text-primary" />
-            <span className="font-bold text-on-surface-variant">Vovó, achamos farmácias em {currentCity || 'sua região'}!</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border-[2px] border-[#1e1b13] w-fit">
+              <MapPin className="w-5 h-5 text-primary" />
+              <span className="font-bold text-on-surface-variant">Vovó, achamos farmácias em {currentCity}!</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsEditingCity(true)}
+              className="text-primary font-bold flex items-center gap-1 hover:bg-primary-container/20 rounded-full"
+            >
+              <Edit2 className="w-4 h-4" />
+              Não é aqui?
+            </Button>
           </div>
+
+          {isEditingCity && (
+            <div className="flex gap-2 animate-fade-in bg-white p-4 rounded-xl border-[3px] border-[#1e1b13] shadow-[4px_4px_0px_#1e1b13]">
+              <Input 
+                value={tempCity} 
+                onChange={(e) => setTempCity(e.target.value)}
+                placeholder="Nome da sua cidade"
+                className="border-[2px] border-[#1e1b13] font-bold"
+              />
+              <Button onClick={handleSaveCity} className="bg-primary text-white font-bold border-[2px] border-[#1e1b13]">Salvar</Button>
+            </div>
+          )}
         </div>
 
         {/* Map View - Com foto icônica da cidade */}
