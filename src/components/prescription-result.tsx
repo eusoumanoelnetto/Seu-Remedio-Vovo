@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import type { ReadPrescriptionOutput } from '@/ai/flows/read-prescription-flow';
 import { textToSpeech } from '@/ai/flows/tts-flow';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 
@@ -31,9 +30,9 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
   const [loadingAudioIdx, setLoadingAudioIdx] = useState<number | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationConfirmed, setLocationConfirmed] = useState(false);
-  const [currentCity, setCurrentCity] = useState(data.city);
-  const [isEditingCity, setIsEditingCity] = useState(false);
-  const [tempCity, setTempCity] = useState(data.city);
+  const [currentAddress, setCurrentAddress] = useState(data.city);
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [tempAddress, setTempAddress] = useState(data.city);
   const { toast } = useToast();
 
   const handlePlayAudio = async (idx: number, name: string, instruction: string) => {
@@ -54,13 +53,41 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
     setIsLocating(true);
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setIsLocating(false);
-          setLocationConfirmed(true);
-          toast({
-            title: "Localização confirmada!",
-            description: `Que maravilha, vovó! Já sei que a senhora está em ${currentCity}.`,
-          });
+        async (position) => {
+          try {
+            // Usando Nominatim (OpenStreetMap) para reverse geocoding gratuito
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1`,
+              { headers: { 'Accept-Language': 'pt-BR' } }
+            );
+            const addressData = await response.json();
+            
+            // Tenta pegar o bairro (suburb) ou cidade
+            const neighborhood = addressData.address.suburb || addressData.address.neighbourhood || addressData.address.city_district;
+            const city = addressData.address.city || addressData.address.town || addressData.address.village;
+            const state = addressData.address.state;
+            
+            const fullReadableAddress = neighborhood 
+              ? `${neighborhood}, ${city}` 
+              : `${city}, ${state}`;
+
+            setCurrentAddress(fullReadableAddress);
+            setIsLocating(false);
+            setLocationConfirmed(true);
+            toast({
+              title: "Achei a senhora!",
+              description: `Que maravilha, vovó! Já sei que a senhora está em ${fullReadableAddress}.`,
+            });
+          } catch (err) {
+            console.error("Geocoding error:", err);
+            setIsLocating(false);
+            setLocationConfirmed(true); // Mantém como confirmado mas usa o que já tem
+            toast({
+              variant: "destructive",
+              title: "Erro de endereço",
+              description: "Não consegui ler o nome da rua, mas sei que a senhora está por aqui!",
+            });
+          }
         },
         (error) => {
           setIsLocating(false);
@@ -81,25 +108,24 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
     }
   };
 
-  const handleSaveCity = () => {
-    if (tempCity.trim()) {
-      setCurrentCity(tempCity);
-      setIsEditingCity(false);
+  const handleSaveAddress = () => {
+    if (tempAddress.trim()) {
+      setCurrentAddress(tempAddress);
+      setIsEditingAddress(false);
       setLocationConfirmed(true);
       toast({
-        title: "Cidade atualizada!",
-        description: `Entendido, vovó! Agora estamos em ${tempCity}.`,
+        title: "Endereço atualizado!",
+        description: `Entendido, vovó! Agora estamos em ${tempAddress}.`,
       });
     }
   };
 
-  // Melhorando o hint de imagem para ser mais específico baseado na cidade
-  const cityImageHint = currentCity ? `${currentCity} city landmark tourism` : "city landmark";
-  const cityImageSeed = currentCity ? currentCity.toLowerCase().replace(/\s+/g, '-') + "-vovo-city" : "cidade-fofa";
+  const cityForImage = currentAddress.split(',').pop()?.trim() || currentAddress;
+  const cityImageHint = `${cityForImage} city landmark tourism`;
+  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city";
 
   return (
     <div className="space-y-12 animate-fade-in pb-20">
-      {/* Hero Section */}
       <header className="text-center space-y-4 py-6">
         <span className="inline-block px-6 py-2 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-extrabold text-xs uppercase tracking-widest border-[3px] border-[#1e1b13] shadow-[4px_4px_0px_#1e1b13]">
           INTELIGÊNCIA DO NETINHO
@@ -110,7 +136,6 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         </p>
       </header>
 
-      {/* Medicines Grid */}
       <section className="grid grid-cols-1 gap-8">
         {data.medicines.map((med, idx) => (
           <div key={idx} className="bg-white p-8 rounded-[2.5rem] border-[4px] border-[#1e1b13] shadow-[10px_10px_0px_#1e1b13] space-y-6 relative group transition-all">
@@ -140,18 +165,17 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         ))}
       </section>
 
-      {/* Pharmacy Section */}
       <section className="space-y-8 pt-4">
         <div className="space-y-2 px-2 flex flex-col gap-2">
           <h2 className="font-headline font-extrabold text-3xl text-on-background">Farmácias Perto de Você</h2>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border-[2px] border-[#1e1b13] w-fit">
               <MapPin className="w-5 h-5 text-primary" />
-              <span className="font-bold text-on-surface-variant">Vovó, achamos farmácias em {currentCity}!</span>
+              <span className="font-bold text-on-surface-variant">Vovó, achamos farmácias em {currentAddress}!</span>
             </div>
             <Button 
               variant="ghost" 
-              onClick={() => setIsEditingCity(true)}
+              onClick={() => setIsEditingAddress(true)}
               className="text-primary font-bold flex items-center gap-1 hover:bg-primary-container/20 rounded-full"
             >
               <Edit2 className="w-4 h-4" />
@@ -159,31 +183,29 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
             </Button>
           </div>
 
-          {isEditingCity && (
+          {isEditingAddress && (
             <div className="flex gap-2 animate-fade-in bg-white p-4 rounded-xl border-[3px] border-[#1e1b13] shadow-[4px_4px_0px_#1e1b13]">
               <Input 
-                value={tempCity} 
-                onChange={(e) => setTempCity(e.target.value)}
-                placeholder="Nome da sua cidade"
+                value={tempAddress} 
+                onChange={(e) => setTempAddress(e.target.value)}
+                placeholder="Ex: Campo Grande, RJ"
                 className="border-[2px] border-[#1e1b13] font-bold"
               />
-              <Button onClick={handleSaveCity} className="bg-primary text-white font-bold border-[2px] border-[#1e1b13]">Salvar</Button>
+              <Button onClick={handleSaveAddress} className="bg-primary text-white font-bold border-[2px] border-[#1e1b13]">Salvar</Button>
             </div>
           )}
         </div>
 
-        {/* Map View - Com foto icônica da cidade */}
         <div className="relative h-80 rounded-[3.5rem] overflow-hidden border-[5px] border-[#1e1b13] shadow-[12px_12px_0px_#1e1b13] ambient-float group">
           <Image 
             src={`https://picsum.photos/seed/${cityImageSeed}/800/600`} 
-            alt={`Foto de ${currentCity || 'sua cidade'}`} 
+            alt={`Foto de ${currentAddress || 'sua localização'}`} 
             fill 
             data-ai-hint={cityImageHint}
             className="object-cover opacity-90 transition-transform group-hover:scale-110 duration-1000"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-transparent to-transparent" />
           
-          {/* Botão de confirmação estilo marcador pulsante */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 w-full px-10">
             <button 
               onClick={handleConfirmLocation}
@@ -201,15 +223,14 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
                 <span className="material-symbols-outlined text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
               )}
             </button>
-            <div className="bg-white/95 backdrop-blur-md px-8 py-3 rounded-full border-[2px] border-[#1e1b13] shadow-lg">
-              <p className="font-extrabold text-primary text-base uppercase tracking-tight text-center">
-                {locationConfirmed ? currentCity : isLocating ? "Te procurando..." : "Clique para confirmar local"}
+            <div className="bg-white/95 backdrop-blur-md px-8 py-3 rounded-full border-[2px] border-[#1e1b13] shadow-lg max-w-[90%]">
+              <p className="font-extrabold text-primary text-base uppercase tracking-tight text-center truncate">
+                {locationConfirmed ? currentAddress : isLocating ? "Te procurando..." : "Clique para ver endereço"}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Pharmacy List */}
         <div className="grid grid-cols-1 gap-6">
           {data.pharmacies.map((pharm, i) => (
             <div key={i} className="flex items-center gap-6 bg-white p-6 rounded-[2rem] border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13]">
@@ -234,7 +255,6 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
         </div>
       </section>
 
-      {/* Final Message */}
       <div className="bg-primary-container/20 p-10 rounded-[3rem] text-center space-y-4 border-[3px] border-dashed border-[#1e1b13]/30">
         <Heart className="w-16 h-16 text-primary fill-primary mx-auto animate-pulse" />
         <p className="font-headline font-extrabold text-primary italic text-2xl leading-relaxed">
