@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -55,17 +54,14 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            // Usando Nominatim (OpenStreetMap) para reverse geocoding
             const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&zoom=18&addressdetails=1`,
               { headers: { 'Accept-Language': 'pt-BR' } }
             );
             const addressData = await response.json();
             
-            // Prioriza o bairro (suburb/neighbourhood) e a cidade
             const neighborhood = addressData.address.suburb || addressData.address.neighbourhood || addressData.address.city_district || addressData.address.village;
             const city = addressData.address.city || addressData.address.town || addressData.address.municipality || "sua cidade";
-            const state = addressData.address.state;
             
             let fullReadableAddress = "";
             if (neighborhood) {
@@ -75,12 +71,12 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
               fullReadableAddress = city;
             }
 
-            // Se o GPS retornar Virginia ou EUA (comum em servidores), avisamos a vovó
+            // Se o GPS retornar Virginia ou EUA (comum em servidores de nuvem), avisamos a vovó
             if (fullReadableAddress.toLowerCase().includes('virginia') || fullReadableAddress.toLowerCase().includes('united states') || city.toLowerCase().includes('sua cidade')) {
               setIsLocating(false);
               toast({
-                title: "Achei um lugar muito longe!",
-                description: "Vovó, o GPS está dizendo que a senhora está nos EUA! Vamos escrever o seu endereço do Rio?",
+                title: "O GPS se confundiu!",
+                description: "Vovó, ele está dizendo que a senhora está nos EUA! Vamos escrever Campo Grande?",
               });
               setIsEditingAddress(true);
               return;
@@ -96,25 +92,22 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
           } catch (err) {
             console.error("Geocoding error:", err);
             setIsLocating(false);
-            setLocationConfirmed(true); 
             toast({
               variant: "destructive",
               title: "Erro de endereço",
-              description: "Não consegui ler o nome da rua, mas sei que a senhora está por aqui!",
+              description: "Não consegui ler o nome da rua, vovó. Pode digitar para mim?",
             });
+            setIsEditingAddress(true);
           }
         },
         (error) => {
           setIsLocating(false);
-          let message = "Não consegui te achar, vovó. Pode ser que o GPS esteja desligado.";
+          let message = "Vovó, a senhora precisa clicar em 'Permitir' para eu te achar!";
+          if (error.code === error.TIMEOUT) message = "O GPS demorou muito para responder, vovó.";
           
-          if (error.code === error.PERMISSION_DENIED) {
-            message = "Vovó, a senhora precisa clicar em 'Permitir' na janelinha do navegador para eu te achar!";
-          }
-
           toast({
             variant: "destructive",
-            title: "Erro de localização",
+            title: "Localização",
             description: message,
           });
           setIsEditingAddress(true);
@@ -123,11 +116,6 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
       );
     } else {
       setIsLocating(false);
-      toast({
-        variant: "destructive",
-        title: "Ih, vovó!",
-        description: "Seu celular não tem a função de GPS funcionando agora.",
-      });
       setIsEditingAddress(true);
     }
   };
@@ -144,11 +132,10 @@ export function PrescriptionResult({ data, onReset }: PrescriptionResultProps) {
     }
   };
 
-  // Lógica para busca de imagem: se for Rio, busca Cristo Redentor
   const cityForImage = currentAddress.split(',').pop()?.trim() || currentAddress;
   const isRio = currentAddress.toLowerCase().includes('rio') || currentAddress.toLowerCase().includes('janeiro') || currentAddress.toLowerCase().includes('campo grande');
   const cityImageHint = isRio ? "cristo redentor corcovado rio de janeiro landmark" : `${cityForImage} city landmark tourism`;
-  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city-v3";
+  const cityImageSeed = cityForImage.toLowerCase().replace(/\s+/g, '-') + "-vovo-city-v4";
 
   return (
     <div className="space-y-12 animate-fade-in pb-20">

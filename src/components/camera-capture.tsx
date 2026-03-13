@@ -16,10 +16,11 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    async function setupCamera() {
+    const getCameraPermission = async () => {
       try {
         // Tenta primeiro a câmera traseira (environment)
         let mediaStream;
@@ -30,22 +31,20 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
           });
         } catch (innerErr: any) {
           // Se falhar (ex: no PC que só tem webcam frontal), tenta qualquer câmera disponível
-          if (innerErr.name === 'NotFoundError' || innerErr.name === 'OverconstrainedError') {
-            mediaStream = await navigator.mediaDevices.getUserMedia({
-              video: true,
-              audio: false,
-            });
-          } else {
-            throw innerErr;
-          }
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
         }
         
         setStream(mediaStream);
+        setHasCameraPermission(true);
         if (videoRef.current) {
           videoRef.current.srcObject = mediaStream;
         }
       } catch (err: any) {
         console.error("Camera access error:", err);
+        setHasCameraPermission(false);
         let message = "Não conseguimos abrir a câmera, vovó.";
         
         if (err.name === 'NotFoundError') {
@@ -57,10 +56,15 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
         }
         
         setError(message);
+        toast({
+          variant: 'destructive',
+          title: 'Acesso à Câmera',
+          description: message,
+        });
       }
-    }
+    };
 
-    setupCamera();
+    getCameraPermission();
 
     return () => {
       if (stream) {
@@ -84,17 +88,19 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
     }
   };
 
-  if (error) {
+  if (error || hasCameraPermission === false) {
     return (
       <div className="fixed inset-0 bg-background flex flex-col items-center justify-center p-10 text-center space-y-10 animate-fade-in z-[110]">
         <div className="w-32 h-32 rounded-full bg-error/10 border-[4px] border-error flex items-center justify-center shadow-xl animate-bounce">
           <AlertCircle className="w-16 h-16 text-error" />
         </div>
         <div className="space-y-4 max-w-sm">
-          <p className="text-3xl font-headline font-extrabold text-on-background leading-tight">{error}</p>
+          <p className="text-3xl font-headline font-extrabold text-on-background leading-tight">
+            {error || "Vovó, preciso que a senhora autorize a câmera!"}
+          </p>
           <div className="bg-surface-container-low p-6 rounded-[2rem] border-[3px] border-[#1e1b13] shadow-[6px_6px_0px_#1e1b13] italic">
             <p className="text-xl text-on-surface font-medium">
-              "Não fique triste, vovó! A senhora pode escolher uma foto que já tirou na sua galeria."
+              "Não se preocupe! A senhora pode escolher uma foto que já tirou na sua galeria."
             </p>
           </div>
         </div>
@@ -124,6 +130,7 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
           ref={videoRef}
           autoPlay
           playsInline
+          muted
           className="w-full h-full object-cover"
         />
         <canvas ref={canvasRef} className="hidden" />
@@ -141,7 +148,6 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
           </div>
         </div>
 
-        {/* Framing Guide */}
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
           <div className="w-[85%] aspect-square border-[6px] border-white/60 rounded-[3.5rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
             <div className="absolute inset-0 border-8 border-dashed border-white/30 rounded-[3.5rem] animate-pulse" />
@@ -173,7 +179,7 @@ export function CameraCapture({ onCapture, onCancel, onFileSelect }: CameraCaptu
             </div>
           </button>
 
-          <div className="w-16" /> {/* Spacer */}
+          <div className="w-16" />
         </div>
         
         <p className="mt-8 text-primary font-headline font-extrabold text-2xl animate-pulse tracking-tight uppercase">Aperte aqui para ler!</p>
